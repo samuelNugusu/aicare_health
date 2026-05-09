@@ -14,34 +14,41 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    function isDoctor() {
+      return isSignedIn() && getUserRole(request.auth.uid) == 'doctor';
+    }
+
+    function isVerifiedAdmin() {
+      return isSignedIn() && request.auth.token.email == 'sami478779@gmail.com' && request.auth.token.email_verified == true;
     }
 
     // Users collection
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isOwner(userId) || isAdmin() || isDoctor();
+      allow list: if isAdmin() || isDoctor() || (isSignedIn() && resource.data.uid == request.auth.uid);
       allow create: if isOwner(userId) 
-        && request.resource.data.keys().hasAll(['uid', 'email'])
-        && request.resource.data.uid == userId;
-      allow update: if isOwner(userId)
-        && request.resource.data.uid == userId;
+        && (request.resource.data.role == 'client' || isVerifiedAdmin());
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+      allow delete: if isAdmin();
       
       // Lab Results subcollection
       match /lab_results/{resultId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) 
-          && request.resource.data.keys().hasAll(['fileName', 'uploadDate', 'status'])
-          && request.resource.data.uploadDate == request.time;
-        allow update: if isOwner(userId);
+        allow read: if isOwner(userId) || isDoctor() || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
       }
 
       // Messages subcollection
       match /messages/{messageId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId)
-          && request.resource.data.keys().hasAll(['role', 'content', 'timestamp'])
-          && request.resource.data.timestamp == request.time;
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId);
       }
     }
   }

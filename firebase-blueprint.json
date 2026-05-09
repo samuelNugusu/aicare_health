@@ -2,17 +2,20 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "User profile and health overview",
+      "description": "User profile with role-based access",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string" },
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["client", "doctor", "admin"] },
         "createdAt": { "type": "string", "format": "date-time" },
-        "healthSummary": { "type": "string" }
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "specialty": { "type": "string", "description": "For doctors only" },
+        "isVerified": { "type": "boolean", "description": "For doctors/admins" }
       },
-      "required": ["uid", "email"]
+      "required": ["uid", "email", "role"]
     },
     "LabResult": {
       "title": "Lab Result",

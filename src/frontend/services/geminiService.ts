@@ -1,6 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const getApiKey = () => {
+  const metaEnv = (import.meta as any).env;
+  return (metaEnv?.VITE_GEMINI_API_KEY as string) || (process.env.GEMINI_API_KEY as string) || '';
+};
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 const ANALYSIS_PROMPT = `
 You are an expert AI Health Diagnostic Assistant. Your task is to analyze lab results from an image or text.
@@ -21,8 +26,9 @@ Output format should be JSON:
 `;
 
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }) {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("AI Analysis is unavailable: GEMINI_API_KEY is missing. Please add it to your environment variables.");
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("AI Analysis is unavailable: GEMINI_API_KEY is missing. Please add it to your .env file as VITE_GEMINI_API_KEY.");
   }
 
   const parts: any[] = [{ text: ANALYSIS_PROMPT }];
@@ -63,7 +69,8 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
 }
 
 export async function getHealthAssistantResponse(history: { role: 'user' | 'model'; content: string }[], message: string, base64Image?: string) {
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     throw new Error("Chat Assistant is unavailable: GEMINI_API_KEY is missing.");
   }
 

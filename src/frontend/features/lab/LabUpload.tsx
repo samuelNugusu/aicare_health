@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { analyzeLabResult } from '../../services/geminiService';
 import { db, auth } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../../firebase/errorHandlers';
 import { cn } from '../../utils/utils';
 import AnalysisResults from './AnalysisResults';
 
@@ -53,13 +54,18 @@ export default function LabUpload() {
       
       // Save to Firebase if user is logged in
       if (auth.currentUser) {
-        await addDoc(collection(db, `users/${auth.currentUser.uid}/lab_results`), {
-          fileName: file?.name,
-          uploadDate: serverTimestamp(),
-          status: 'completed',
-          analysis: analysisJson,
-          previewUrl: '...' // Usually you'd upload to storage first, but for now we skip storage and just use analysis
-        });
+        const path = `users/${auth.currentUser.uid}/lab_results`;
+        try {
+          await addDoc(collection(db, path), {
+            fileName: file?.name,
+            uploadDate: serverTimestamp(),
+            status: 'completed',
+            analysis: analysisJson,
+            previewUrl: '...' 
+          });
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, path);
+        }
       }
     } catch (err: any) {
       console.error("Lab Upload Error:", err);

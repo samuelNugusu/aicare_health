@@ -47,4 +47,14 @@ The app will be available at `http://localhost:3000`.
 ## 6. Project Features
 - **AI Chat**: Powered by Gemini 3 Flash. Works even without login!
 - **Lab Analysis**: Upload images of blood tests for instant insights.
-- **Secure Auth**: Sign in with Google to save your history to Firestore.
+- **Role-Based Dashboards**:
+  - **Client**: Upload labs, view trends, and chat with AI.
+  - **Doctor**: Search patients, review results, and receive critical alerts.
+  - **Admin**: System-wide user management and analytics.
+- **Secure Auth**: Sign in with Google to save history. Roles are assigned automatically.
+- **Real-time DB**: Powered by Firestore with hardened security rules.
+
+## Roles Management
+- By default, new users are assigned the **Client** role.
+- To test the **Admin** role, log in with `sami478779@gmail.com`.
+- **Doctor** roles can be assigned by an Admin in the Admin Dashboard.

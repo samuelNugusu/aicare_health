@@ -10,6 +10,7 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from './errorHandlers';
 
 export const signInWithGoogle = async () => {
   try {
@@ -18,19 +19,38 @@ export const signInWithGoogle = async () => {
     
     // Ensure user record exists
     const userRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userRef);
+    let userDoc;
+    try {
+      userDoc = await getDoc(userRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `users/${user.uid}`);
+    }
     
-    if (!userDoc.exists()) {
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp()
-      });
-    } else {
-      await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
+    const role = user.email === 'sami478779@gmail.com' ? 'admin' : 'client';
+    
+    try {
+      if (!userDoc?.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          role: role,
+          createdAt: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+          isVerified: role === 'admin'
+        });
+      } else {
+        // Refresh role and lastLogin for existing users
+        await setDoc(userRef, { 
+          lastLogin: serverTimestamp(),
+          role: userDoc.data().role || role, // Keep current role or set default
+          // Ensure the dev email ALWAYS has admin role
+          ...(user.email === 'sami478779@gmail.com' ? { role: 'admin', isVerified: true } : {})
+        }, { merge: true });
+      }
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
     }
     
     return user;

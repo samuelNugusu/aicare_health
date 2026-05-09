@@ -2,7 +2,26 @@ import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Zap, HeartPulse } from 'lucide-react';
 import { signInWithGoogle } from '../firebase/firebase';
 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../firebase/AuthProvider';
+
 export default function Hero() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStart = async () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      try {
+        await signInWithGoogle();
+        navigate('/dashboard');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden">
       {/* Background patterns */}
@@ -37,10 +56,10 @@ export default function Hero() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={signInWithGoogle}
+                onClick={handleStart}
                 className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
               >
-                Analyze Your Health Now
+                {user ? 'Go to Dashboard' : 'Analyze Your Health Now'}
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               
