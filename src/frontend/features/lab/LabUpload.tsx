@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { analyzeLabResult } from '../../services/geminiService';
+import { analyzeLabResult, AIProvider } from '../../services/aiService';
 import { db, auth } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../firebase/errorHandlers';
 import { cn } from '../../utils/utils';
 import AnalysisResults from './AnalysisResults';
+import { Sparkles, Brain } from 'lucide-react';
 
 export default function LabUpload() {
   const [isDragging, setIsDragging] = useState(false);
@@ -15,6 +16,7 @@ export default function LabUpload() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<AIProvider>('gemini');
 
   const handleFile = (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
@@ -49,7 +51,7 @@ export default function LabUpload() {
     setIsProcessing(true);
     setError(null);
     try {
-      const analysisJson = await analyzeLabResult({ base64Image: preview });
+      const analysisJson = await analyzeLabResult({ base64Image: preview }, provider);
       setResult(analysisJson);
       
       // Save to Firebase if user is logged in
@@ -101,7 +103,30 @@ export default function LabUpload() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
            <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">Upload Your Lab Results</h2>
-           <p className="text-gray-600">Drag and drop your blood reports for instant AI-powered insights.</p>
+           <p className="text-gray-600 mb-8">Drag and drop your blood reports for instant AI-powered insights.</p>
+           
+           <div className="inline-flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
+             <button
+               onClick={() => setProvider('gemini')}
+               className={cn(
+                 "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all",
+                 provider === 'gemini' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+               )}
+             >
+               <Sparkles className="w-4 h-4" />
+               Gemini
+             </button>
+             <button
+               onClick={() => setProvider('openai')}
+               className={cn(
+                 "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all",
+                 provider === 'openai' ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+               )}
+             >
+               <Brain className="w-4 h-4" />
+               GPT-4o
+             </button>
+           </div>
         </div>
 
         <div className="relative">

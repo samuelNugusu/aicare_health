@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Sparkles, AlertCircle, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getHealthAssistantResponse } from '../../services/geminiService';
+import { getHealthAssistantResponse, AIProvider } from '../../services/aiService';
 import { db, auth } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
@@ -13,6 +13,7 @@ export default function ChatAssistant() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [provider, setProvider] = useState<AIProvider>('gemini');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,11 +89,15 @@ export default function ChatAssistant() {
         }
       }
 
-      const updatedHistory = messages.map(m => ({ role: m.role, content: m.content }));
+      const updatedHistory = messages.map(m => ({ 
+        role: (m.role === 'model' ? 'assistant' : m.role) as 'user' | 'assistant', 
+        content: m.content 
+      }));
       const response = await getHealthAssistantResponse(
         updatedHistory, 
         userMessage || "Tell me about this image", 
-        currentImage || undefined
+        currentImage || undefined,
+        provider
       );
 
       if (auth.currentUser) {
@@ -146,7 +151,7 @@ export default function ChatAssistant() {
           <div className="lg:col-span-3">
             <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 flex flex-col h-[600px] overflow-hidden">
               {/* Header */}
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white z-10 shadow-sm">
+              <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white">
@@ -158,6 +163,27 @@ export default function ChatAssistant() {
                     <h4 className="font-bold text-gray-900 leading-none mb-1">AiCare Assistant</h4>
                     <span className="text-[10px] text-green-600 uppercase font-bold tracking-widest">Online</span>
                   </div>
+                </div>
+
+                <div className="flex p-0.5 bg-gray-100 rounded-xl">
+                   <button 
+                     onClick={() => setProvider('gemini')}
+                     className={cn(
+                       "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all",
+                       provider === 'gemini' ? "bg-white text-blue-600 shadow-sm" : "text-gray-400"
+                     )}
+                   >
+                     Gemini
+                   </button>
+                   <button 
+                     onClick={() => setProvider('openai')}
+                     className={cn(
+                       "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all",
+                       provider === 'openai' ? "bg-white text-green-600 shadow-sm" : "text-gray-400"
+                     )}
+                   >
+                     GPT-4o
+                   </button>
                 </div>
               </div>
 
