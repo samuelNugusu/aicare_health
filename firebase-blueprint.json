@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and health overview",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "healthSummary": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "LabResult": {
+      "title": "Lab Result",
+      "description": "Uploaded lab result and its AI analysis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "uploadDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "error"] },
+        "rawText": { "type": "string" },
+        "analysis": {
+          "type": "object",
+          "properties": {
+            "summary": { "type": "string" },
+            "keyMetrics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "marker": { "type": "string" },
+                  "value": { "type": "string" },
+                  "unit": { "type": "string" },
+                  "referenceRange": { "type": "string" },
+                  "status": { "type": "string", "enum": ["normal", "high", "low", "critical"] }
+                }
+              }
+            },
+            "recommendations": { "type": "array", "items": { "type": "string" } },
+            "predictiveAlerts": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["userId", "fileName", "uploadDate", "status"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Message in a health assistant conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "model"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "role", "content", "timestamp"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "users/{userId}/lab_results/{resultId}": {
+      "schema": "LabResult",
+      "description": "Lab results for a user"
+    },
+    "users/{userId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Chat history with the AI assistant"
+    }
+  }
+}
