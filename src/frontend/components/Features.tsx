@@ -42,14 +42,14 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 bg-gray-50">
+    <section id="features" className="py-24 bg-gray-50 dark:bg-gray-950 transition-colors">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 px-4">
-          <span className="text-blue-600 font-bold uppercase tracking-widest text-xs">Features</span>
-          <h2 className="text-4xl md:text-5xl font-sans font-bold text-gray-900 mt-4 mb-6 tracking-tight">
+          <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">Features</span>
+          <h2 className="text-4xl md:text-5xl font-sans font-bold text-gray-900 dark:text-white mt-4 mb-6 tracking-tight">
             Advanced AI Health Features
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
             Our platform combines cutting-edge machine learning with verified medical knowledge 
             to provide you with the most accurate health insights.
           </p>
@@ -60,13 +60,13 @@ export default function Features() {
             <motion.div
               key={i}
               whileHover={{ y: -5 }}
-              className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all"
+              className="bg-white dark:bg-gray-900 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl dark:hover:shadow-blue-900/5 transition-all"
             >
-              <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-gray-200`}>
+              <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-gray-200 dark:shadow-black/20`}>
                 <feature.icon className="text-white w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
                 {feature.description}
               </p>
             </motion.div>

@@ -48,15 +48,15 @@ const DashboardRouter = () => {
 
   if (!roleData) {
     return (
-      <div className="max-w-md mx-auto mt-20 p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl text-center">
-        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+      <div className="max-w-md mx-auto mt-20 p-10 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl text-center transition-colors">
+        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Activity className="w-8 h-8" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Syncing Health Profile</h2>
-        <p className="text-gray-500 mb-10 leading-relaxed font-serif italic">We're calibrating your personalized dashboard. If this takes more than a few seconds, please click initialize below.</p>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Syncing Health Profile</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed font-serif italic">We're calibrating your personalized dashboard. If this takes more than a few seconds, please click initialize below.</p>
         <button 
           onClick={() => window.location.reload()}
-          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-200"
+          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/20"
         >
           Initialize Profile
         </button>
@@ -77,7 +77,7 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-300">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-blue-600 origin-left z-[60]"
         style={{ scaleX }}
@@ -92,11 +92,11 @@ export default function App() {
               <Hero />
               <Features />
               
-              <div id="how-it-works" className="py-24 bg-white border-y border-gray-50">
+              <div id="how-it-works" className="py-24 bg-white dark:bg-gray-950/50 border-y border-gray-50 dark:border-gray-900 transition-colors">
                 <div className="max-w-7xl mx-auto px-4">
                    <div className="text-center mb-16">
-                      <span className="text-blue-600 font-bold uppercase tracking-widest text-xs">Workflow</span>
-                      <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-6 tracking-tight">How AiCare Works</h2>
+                      <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">Workflow</span>
+                      <h2 className="text-4xl font-bold text-gray-900 dark:text-white mt-4 mb-6 tracking-tight">How AiCare Works</h2>
                    </div>
                    
                    <div className="grid md:grid-cols-4 gap-8">
@@ -106,10 +106,10 @@ export default function App() {
                        { step: "03", title: "Get Recommendations", desc: "Receive personalized health advice based on your biology." },
                        { step: "04", title: "Chat with AI", desc: "Ask follow-up questions to your personal assistant." }
                      ].map((item, i) => (
-                       <div key={i} className="relative p-8 rounded-[2rem] bg-gray-50 border border-gray-100 group hover:bg-white hover:shadow-xl transition-all">
-                          <span className="text-5xl font-sans font-black text-blue-100 absolute top-4 right-8 group-hover:text-blue-600/10 transition-colors">{item.step}</span>
-                          <h3 className="text-xl font-bold text-gray-900 mb-3 relative z-10">{item.title}</h3>
-                          <p className="text-sm text-gray-500 leading-relaxed relative z-10">{item.desc}</p>
+                       <div key={i} className="relative p-8 rounded-[2rem] bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 group hover:bg-white dark:hover:bg-gray-800 hover:shadow-xl transition-all">
+                          <span className="text-5xl font-sans font-black text-blue-100 dark:text-blue-900 absolute top-4 right-8 group-hover:text-blue-600/10 dark:group-hover:text-blue-400/10 transition-colors">{item.step}</span>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 relative z-10">{item.title}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed relative z-10">{item.desc}</p>
                        </div>
                      ))}
                    </div>
@@ -121,7 +121,7 @@ export default function App() {
               </div>
 
               {/* Ready to Take Control Section */}
-              <section className="py-24 bg-blue-600 relative overflow-hidden">
+              <section className="py-24 bg-blue-600 dark:bg-blue-700 relative overflow-hidden transition-colors">
                  <div className="absolute inset-0 opacity-10 pointer-events-none">
                     <div className="absolute top-0 left-0 w-96 h-96 bg-white blur-[100px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
                     <div className="absolute bottom-0 right-0 w-96 h-96 bg-white blur-[100px] translate-x-1/2 translate-y-1/2 rounded-full" />
@@ -138,7 +138,7 @@ export default function App() {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-white text-blue-600 px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-900/20 hover:bg-blue-50 transition-all"
+                      className="bg-white text-blue-600 dark:text-blue-700 px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-900/20 hover:bg-blue-50 transition-all"
                     >
                       Get Started for Free
                     </motion.button>

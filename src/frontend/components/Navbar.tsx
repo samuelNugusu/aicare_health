@@ -1,28 +1,30 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/AuthProvider';
+import { useTheme } from '../utils/ThemeContext';
 import { auth } from '../firebase/firebase';
 import { signOut } from 'firebase/auth';
-import { Activity, LogIn, User as UserIcon, LayoutDashboard } from 'lucide-react';
+import { Activity, LogIn, User as UserIcon, LayoutDashboard, Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
 import AuthModal from './AuthModal';
 
 export default function Navbar() {
   const { user, roleData } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-bottom border-gray-100 italic serif">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-300 italic serif">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 not-italic">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <Activity className="text-white w-5 h-5" />
           </div>
-          <span className="font-sans font-bold text-xl tracking-tight text-gray-900">AiCare</span>
+          <span className="font-sans font-bold text-xl tracking-tight text-gray-900 dark:text-white">AiCare</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-400">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
           <a href="/#features" className="hover:text-blue-600 transition-colors">Features</a>
           <a href="/#assistant" className="hover:text-blue-600 transition-colors">AI Assistant</a>
@@ -35,13 +37,21 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4 text-center">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </button>
+
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-900">{user.displayName || user.email?.split('@')[0]}</span>
+                  <span className="text-xs font-bold text-gray-900 dark:text-gray-100">{user.displayName || user.email?.split('@')[0]}</span>
                   {roleData && (
-                    <span className="text-[8px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black uppercase tracking-tighter">
+                    <span className="text-[8px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md font-black uppercase tracking-tighter">
                       {roleData.role}
                     </span>
                   )}
@@ -57,9 +67,9 @@ export default function Navbar() {
                 </button>
               </div>
               {user.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-gray-200" />
+                <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-800" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                   <UserIcon className="w-4 h-4 text-gray-400" />
                 </div>
               )}
@@ -69,7 +79,7 @@ export default function Navbar() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-2 bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
             >
               <LogIn className="w-4 h-4" />
               Get Started

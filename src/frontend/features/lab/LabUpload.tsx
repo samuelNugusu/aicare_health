@@ -86,10 +86,10 @@ export default function LabUpload() {
 
   if (result) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Analysis Report</h2>
-          <button onClick={reset} className="text-sm font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl transition-all">
+      <div className="max-w-4xl mx-auto px-4 py-12 transition-colors duration-300">
+        <div className="flex items-center justify-between mb-8 text-center sm:text-left">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Analysis Report</h2>
+          <button onClick={reset} className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-4 py-2 rounded-xl transition-all">
             Upload Another
           </button>
         </div>
@@ -99,18 +99,18 @@ export default function LabUpload() {
   }
 
   return (
-    <section id="upload" className="py-24 bg-white relative">
+    <section id="upload" className="py-24 bg-white dark:bg-gray-950/50 relative transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-12">
-           <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">Upload Your Lab Results</h2>
-           <p className="text-gray-600 mb-8">Drag and drop your blood reports for instant AI-powered insights.</p>
+           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Upload Your Lab Results</h2>
+           <p className="text-gray-600 dark:text-gray-400 mb-8">Drag and drop your blood reports for instant AI-powered insights.</p>
            
-           <div className="inline-flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
+           <div className="inline-flex p-1 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 transition-colors">
              <button
                onClick={() => setProvider('gemini')}
                className={cn(
                  "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all",
-                 provider === 'gemini' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                 provider === 'gemini' ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
                )}
              >
                <Sparkles className="w-4 h-4" />
@@ -120,7 +120,7 @@ export default function LabUpload() {
                onClick={() => setProvider('openai')}
                className={cn(
                  "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all",
-                 provider === 'openai' ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                 provider === 'openai' ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
                )}
              >
                <Brain className="w-4 h-4" />
@@ -141,16 +141,16 @@ export default function LabUpload() {
                 onDrop={onDrop}
                 className={cn(
                   "border-2 border-dashed rounded-[3rem] p-12 transition-all flex flex-col items-center justify-center text-center gap-6 cursor-pointer",
-                  isDragging ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-400 hover:bg-gray-50"
+                  isDragging ? "border-blue-600 bg-blue-50 dark:bg-blue-900/10" : "border-gray-200 dark:border-gray-800 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-900/50"
                 )}
                 onClick={() => document.getElementById('file-input')?.click()}
               >
-                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Upload className="w-10 h-10 text-blue-600" />
+                <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                  <Upload className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-gray-900 mb-1">Select a file or drag and drop</p>
-                  <p className="text-sm text-gray-500 uppercase tracking-widest font-bold">Image (JPG, PNG)</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Select a file or drag and drop</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 uppercase tracking-widest font-bold">Image (JPG, PNG)</p>
                 </div>
                 <input 
                   type="file" 
@@ -164,31 +164,31 @@ export default function LabUpload() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-gray-50 rounded-[3rem] p-4 lg:p-8 border border-gray-100 flex flex-col items-center"
+                className="bg-gray-50 dark:bg-gray-900 rounded-[3rem] p-4 lg:p-8 border border-gray-100 dark:border-gray-800 flex flex-col items-center"
               >
                  <div className="relative w-full max-w-lg mb-8 group">
-                   <img src={preview!} alt="Preview" className="w-full rounded-[2rem] shadow-lg border border-white" />
+                   <img src={preview!} alt="Preview" className="w-full rounded-[2rem] shadow-lg border border-white dark:border-gray-800" />
                    <button 
                     onClick={reset}
-                    className="absolute top-4 right-4 bg-white/80 backdrop-blur shadow-md p-2 rounded-full hover:bg-white text-gray-900"
+                    className="absolute top-4 right-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur shadow-md p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                    >
                      <X className="w-5 h-5" />
                    </button>
                  </div>
                  
                  <div className="w-full max-w-lg space-y-6">
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                      <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                    <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
                         <FileText className="w-6 h-6" />
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        <p className="font-bold text-gray-900 truncate">{file.name}</p>
-                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <p className="font-bold text-gray-900 dark:text-gray-100 truncate">{file.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                       </div>
                       {isProcessing ? (
-                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                        <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
                       ) : (
-                        <CheckCircle2 className="w-6 h-6 text-green-500" />
+                        <CheckCircle2 className="w-6 h-6 text-green-500 dark:text-green-400" />
                       )}
                     </div>
 

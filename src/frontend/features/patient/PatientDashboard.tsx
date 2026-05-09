@@ -21,17 +21,17 @@ const PatientDashboard: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12">
+    <div className="p-8 max-w-7xl mx-auto space-y-12 transition-colors duration-300">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Health Overview</h1>
-          <p className="text-gray-500 mt-2">Welcome back, {user?.displayName?.split(' ')[0]}. Here is your latest data.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Health Overview</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Welcome back, {user?.displayName?.split(' ')[0]}. Here is your latest data.</p>
         </div>
         <div className="flex gap-4">
            {/* Summary Cards */}
-           <div className="bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100 min-w-[200px]">
-              <div className="text-[10px] uppercase font-bold text-blue-600 tracking-widest mb-1">BMI Status</div>
-              <div className="text-xl font-bold text-blue-900">22.4 (Normal)</div>
+           <div className="bg-blue-50 dark:bg-blue-900/20 px-6 py-3 rounded-2xl border border-blue-100 dark:border-blue-800/30 min-w-[200px]">
+              <div className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 tracking-widest mb-1">BMI Status</div>
+              <div className="text-xl font-bold text-blue-900 dark:text-blue-100">22.4 (Normal)</div>
            </div>
         </div>
       </header>
@@ -40,34 +40,34 @@ const PatientDashboard: React.FC = () => {
         <div className="lg:col-span-2 space-y-10">
           <section>
             <div className="flex items-center justify-between mb-6 px-2">
-              <h2 className="text-xl font-bold">Recent Lab Results</h2>
-              <button className="text-sm font-bold text-blue-600">View History</button>
+              <h2 className="text-xl font-bold dark:text-white">Recent Lab Results</h2>
+              <button className="text-sm font-bold text-blue-600 dark:text-blue-400">View History</button>
             </div>
             
             <div className="space-y-4">
               {results.map((res, i) => (
-                <div key={i} className="group p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
+                <div key={i} className="group p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase font-bold text-xs">
                       <FileText className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900">{res.fileName}</h4>
-                      <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+                      <h4 className="font-bold text-gray-900 dark:text-gray-100">{res.fileName}</h4>
+                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mt-1">
                         <Clock className="w-3 h-3" />
                         <span>{new Date(res.uploadDate?.toDate()).toLocaleDateString()}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300" />
-                        <span className="font-medium text-green-600 capitalize">{res.status}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
+                        <span className="font-medium text-green-600 dark:text-green-400 capitalize">{res.status}</span>
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-600 transition-all group-hover:translate-x-1" />
+                  <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-700 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all group-hover:translate-x-1" />
                 </div>
               ))}
               
               {results.length === 0 && (
-                <div className="py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100 text-center">
-                   <p className="text-gray-400 font-medium italic">No results uploaded yet</p>
+                <div className="py-12 bg-gray-50 dark:bg-gray-900/30 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800 text-center">
+                   <p className="text-gray-400 dark:text-gray-600 font-medium italic">No results uploaded yet</p>
                 </div>
               )}
             </div>
@@ -93,13 +93,13 @@ const PatientDashboard: React.FC = () => {
               </div>
            </section>
 
-           <div className="p-8 bg-blue-50 rounded-[2.5rem] border border-blue-100">
-              <h4 className="font-bold text-blue-900 mb-4 px-2">Assigned Doctor</h4>
-              <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm">
+           <div className="p-8 bg-blue-50 dark:bg-blue-900/20 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 transition-colors">
+              <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-4 px-2">Assigned Doctor</h4>
+              <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30">
                 <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">DS</div>
                 <div>
-                   <div className="text-sm font-bold text-gray-900">Dr. Sarah Smith</div>
-                   <div className="text-xs text-gray-500 font-medium">General Practitioner</div>
+                   <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Dr. Sarah Smith</div>
+                   <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">General Practitioner</div>
                 </div>
               </div>
            </div>
