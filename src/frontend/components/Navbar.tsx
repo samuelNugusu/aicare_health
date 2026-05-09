@@ -1,12 +1,16 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/AuthProvider';
-import { signInWithGoogle, auth } from '../firebase/firebase';
+import { auth } from '../firebase/firebase';
 import { signOut } from 'firebase/auth';
 import { Activity, LogIn, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { motion } from 'motion/react';
+import AuthModal from './AuthModal';
 
 export default function Navbar() {
   const { user, roleData } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-bottom border-gray-100 italic serif">
@@ -30,12 +34,12 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 text-center">
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-900">{user.displayName}</span>
+                  <span className="text-xs font-bold text-gray-900">{user.displayName || user.email?.split('@')[0]}</span>
                   {roleData && (
                     <span className="text-[8px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black uppercase tracking-tighter">
                       {roleData.role}
@@ -43,7 +47,10 @@ export default function Navbar() {
                   )}
                 </div>
                 <button 
-                  onClick={() => signOut(auth)}
+                  onClick={() => {
+                    signOut(auth);
+                    navigate('/');
+                  }}
                   className="text-[10px] text-gray-500 hover:text-red-600 uppercase tracking-wider font-bold"
                 >
                   Sign Out
@@ -61,13 +68,7 @@ export default function Navbar() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                } catch (err) {
-                  // Error already handled
-                }
-              }}
+              onClick={() => setIsAuthOpen(true)}
               className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors"
             >
               <LogIn className="w-4 h-4" />
@@ -76,6 +77,8 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </nav>
   );
 }

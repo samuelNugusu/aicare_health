@@ -1,24 +1,20 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Zap, HeartPulse } from 'lucide-react';
-import { signInWithGoogle } from '../firebase/firebase';
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/AuthProvider';
+import AuthModal from './AuthModal';
 
 export default function Hero() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const handleStart = async () => {
     if (user) {
       navigate('/dashboard');
     } else {
-      try {
-        await signInWithGoogle();
-        navigate('/dashboard');
-      } catch (err) {
-        console.error(err);
-      }
+      setIsAuthOpen(true);
     }
   };
 
@@ -141,6 +137,7 @@ export default function Hero() {
           </motion.div>
         </div>
       </div>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </section>
   );
 }

@@ -19,7 +19,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+      return isSignedIn() && (getUserRole(request.auth.uid) == 'admin' || request.auth.token.email_verified == true);
     }
 
     function isDoctor() {
