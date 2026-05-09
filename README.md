@@ -12,7 +12,7 @@ Follow these steps to run the professional AI Health Assistant on your local mac
 2. Create a file named **.env** (exactly like that) in the root directory.
 3. Add your Gemini API key:
 ```env
-GEMINI_API_KEY=AIzaSyDTYnz6Cx5wD8vPPzVTrK5pk9woNl4U7eA
+GEMINI_API_KEY=Add Your Key
 ```
 *Note: Make sure there are no spaces around the `=` sign. The app is configured to handle this key in the frontend for you.*
 
