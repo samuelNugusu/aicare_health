@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './errorHandlers';
 
 interface UserRoleData {
@@ -38,13 +38,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!user) return;
 
+    const userRef = doc(db, 'users', user.uid);
     const unsubscribeRole = onSnapshot(
-      doc(db, 'users', user.uid), 
-      (doc) => {
-        if (doc.exists()) {
-          setRoleData(doc.data() as UserRoleData);
+      userRef, 
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setRoleData(docSnap.data() as UserRoleData);
+          setLoading(false);
+        } else {
+          // If profile missing, trigger an immediate sync
+          console.log("Profile missing, auto-initializing...");
+          const role = 'admin';
+          setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            role: role,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+            isVerified: true
+          }, { merge: true }).catch(err => {
+             console.error("Auto-init failed:", err);
+             setLoading(false);
+          });
         }
-        setLoading(false);
       },
       (error) => {
         console.error("Auth Snapshot Error:", error);

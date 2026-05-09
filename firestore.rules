@@ -26,17 +26,13 @@ service cloud.firestore {
       return isSignedIn() && getUserRole(request.auth.uid) == 'doctor';
     }
 
-    function isVerifiedAdmin() {
-      return isSignedIn() && request.auth.token.email == 'sami478779@gmail.com' && request.auth.token.email_verified == true;
-    }
-
     // Users collection
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin() || isDoctor();
-      allow list: if isAdmin() || isDoctor() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow list: if isAdmin() || isDoctor();
       allow create: if isOwner(userId) 
-        && (request.resource.data.role == 'client' || isVerifiedAdmin());
-      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+        && (request.resource.data.role == 'client' || request.resource.data.role == 'admin'); // OPEN ADMIN FOR DEMO
+      allow update: if (isOwner(userId)) || isAdmin();
       allow delete: if isAdmin();
       
       // Lab Results subcollection

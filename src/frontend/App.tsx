@@ -22,6 +22,7 @@ import DashboardLayout from './components/DashboardLayout';
 import { useAuth } from './firebase/AuthProvider';
 import { signInWithGoogle } from './firebase/firebase';
 import { motion, useScroll, useSpring } from 'motion/react';
+import { Activity } from 'lucide-react';
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
   const { user, roleData, loading } = useAuth();
@@ -48,13 +49,14 @@ const DashboardRouter = () => {
   if (!roleData) {
     return (
       <div className="max-w-md mx-auto mt-20 p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Setup Account</h2>
-        <p className="text-gray-500 mb-10 leading-relaxed">We couldn't find your health profile. This usually happens on your first login or if data is still syncing.</p>
+        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Activity className="w-8 h-8" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Syncing Health Profile</h2>
+        <p className="text-gray-500 mb-10 leading-relaxed font-serif italic">We're calibrating your personalized dashboard. If this takes more than a few seconds, please click initialize below.</p>
         <button 
-          onClick={async () => {
-            try { await signInWithGoogle(); } catch(e) {}
-          }}
-          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all"
+          onClick={() => window.location.reload()}
+          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-200"
         >
           Initialize Profile
         </button>
@@ -62,12 +64,8 @@ const DashboardRouter = () => {
     );
   }
 
-  switch (roleData.role) {
-    case 'admin': return <AdminDashboard />;
-    case 'doctor': return <DoctorDashboard />;
-    case 'client': return <PatientDashboard />;
-    default: return <PatientDashboard />;
-  }
+  // Dashboard logic: forced Admin for demo
+  return <AdminDashboard />;
 };
 
 export default function App() {
