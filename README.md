@@ -56,5 +56,5 @@ The app will be available at `http://localhost:3000`.
 
 ## Roles Management
 - By default, new users are assigned the **Client** role.
-- To test the **Admin** role, log in with `sami478779@gmail.com`.
+- To test the **Admin** role, log in with `Email`.
 - **Doctor** roles can be assigned by an Admin in the Admin Dashboard.
