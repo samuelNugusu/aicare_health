@@ -120,7 +120,7 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {Object.entries(METRIC_CONFIG).map(([type, config]) => {
           const Icon = config.icon;
           const data = metrics[type];
@@ -128,12 +128,12 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
             <motion.div 
               key={type}
               layout
-              className={`group relative p-6 rounded-3xl border border-transparent dark:border-gray-800 ${config.bg} transition-all overflow-hidden`}
+              className={`group relative p-5 sm:p-6 rounded-3xl border border-transparent dark:border-gray-800 ${config.bg} transition-all overflow-hidden`}
             >
               {data && (
                 <button 
                   onClick={() => deleteMetric(data.id)}
-                  className="absolute top-2 right-2 p-1.5 bg-white dark:bg-gray-800 text-gray-400 hover:text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                  className="absolute top-2 right-2 p-1.5 bg-white dark:bg-gray-800 text-gray-400 hover:text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm pointer-events-auto z-10"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -141,17 +141,17 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
               
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm ${config.color}`}>
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{config.label}</div>
-                <div className="text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                <div className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">{config.label}</div>
+                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
                   {data ? `${data.value}` : '--'}
-                  <span className="text-xs ml-1 font-bold text-gray-400 uppercase tracking-tighter">{config.unit}</span>
+                  <span className="text-[10px] ml-1 font-bold text-gray-400 uppercase tracking-tighter">{config.unit}</span>
                 </div>
                 {data && (
-                  <div className="text-[10px] text-gray-400 font-medium">
+                  <div className="text-[8px] sm:text-[10px] text-gray-400 font-medium">
                     {new Date(data.timestamp?.toDate()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 )}

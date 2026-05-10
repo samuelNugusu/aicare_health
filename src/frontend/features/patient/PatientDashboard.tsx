@@ -52,28 +52,28 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
   }, []);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12 transition-colors duration-300">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8 sm:space-y-12 transition-colors duration-300">
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-2">
         <div>
-           <div className="flex items-center gap-3 mb-2">
-             <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+           <div className="flex flex-wrap items-center gap-3 mb-2">
+             <h1 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
                {isViewingSelf ? 'Health Hub' : 'Patient Profile'}
              </h1>
              {!isViewingSelf && (
-               <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Read Only</span>
+               <span className="px-3 py-1 bg-blue-600 text-white text-[8px] sm:text-[10px] font-black rounded-full uppercase tracking-widest">Read Only</span>
              )}
            </div>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium">
             {isViewingSelf 
-              ? `Welcome back, ${user?.displayName?.split(' ')[0] || 'Member'}. Monitoring your vitals in real-time.`
-              : `Reviewing clinical data for ${patientData?.displayName || 'Anonymous Patient'}.`
+              ? `Welcome back, ${user?.displayName?.split(' ')[0] || 'Member'}.`
+              : `Reviewing clinical data for ${patientData?.displayName || 'Patient'}.`
             }
           </p>
         </div>
         <div className="flex gap-4">
-           <div className="bg-emerald-50 dark:bg-emerald-900/20 px-6 py-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
+           <div className="bg-emerald-50 dark:bg-emerald-900/20 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-2 sm:gap-3">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
                 {isViewingSelf ? 'Active Monitoring' : 'Live Stream'}
               </div>
            </div>
@@ -84,38 +84,38 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
         <HealthMetrics userId={effectiveUserId} readOnly={!isViewingSelf} />
       </section>
 
-      <div className="grid lg:grid-cols-3 gap-12 pt-4">
-        <div className="lg:col-span-2 space-y-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 pt-4">
+        <div className="lg:col-span-2 space-y-8 sm:space-y-12">
           <section>
-            <div className="flex items-center justify-between mb-8 px-2">
-              <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
+            <div className="flex items-center justify-between mb-6 sm:mb-8 px-2">
+              <h2 className="text-lg sm:text-xl font-bold dark:text-white flex items-center gap-2 uppercase tracking-tight">
                 Recent Reports
               </h2>
-              <button className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest hover:translate-x-1 transition-transform">
+              <button className="text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest hover:translate-x-1 transition-transform">
                 Full Records →
               </button>
             </div>
             
-            <div className="grid gap-4">
+            <div className="grid gap-3 sm:gap-4">
               {results.map((res, i) => (
-                <div key={i} className="group p-6 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-6">
-                    <div className="w-14 h-14 rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                      <FileText className="w-6 h-6" />
+                <div key={i} className="group p-5 sm:p-6 bg-white dark:bg-gray-900 rounded-3xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm flex-shrink-0">
+                      <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight">{res.fileName}</h4>
-                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    <div className="truncate">
+                      <h4 className="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight truncate">{res.fileName}</h4>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-2">
                         <Clock className="w-3 h-3" />
-                        <span>{res.uploadDate?.toDate ? new Date(res.uploadDate.toDate()).toLocaleDateString() : 'Processing...'}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
-                        <span className={`font-bold uppercase tracking-widest text-[10px] ${res.status === 'completed' ? 'text-emerald-500' : 'text-orange-500'}`}>
+                        <span>{res.uploadDate?.toDate ? new Date(res.uploadDate.toDate()).toLocaleDateString() : 'Processing'}</span>
+                        <span className="hidden sm:block w-1 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
+                        <span className={`font-black uppercase tracking-widest text-[8px] sm:text-[10px] ${res.status === 'completed' ? 'text-emerald-500' : 'text-orange-500'}`}>
                           {res.status}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-700 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all group-hover:translate-x-1" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 dark:text-gray-700 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all group-hover:translate-x-1 flex-shrink-0" />
                 </div>
               ))}
               

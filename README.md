@@ -6,7 +6,7 @@ Follow these steps to run the professional AI Health Assistant on your local mac
 - **Node.js** (v18 or higher recommended)
 - **Firebase Project**: A Firebase project with Firestore and Authentication (Google) enabled.
 - **Gemini API Key**: Use your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-- **OpenAI API Key**: Use your API key from [OpenAI AI Studio](https://platform.openai.com/api-keys).
+
 ## 2. Environment Setup
 1. Open the project in Visual Studio Code.
 2. Create a file named **.env** (exactly like that) in the root directory.

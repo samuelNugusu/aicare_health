@@ -48,44 +48,44 @@ const AdminDashboard: React.FC = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        <header className="mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
+        <header className="mb-12 sm:mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8 sm:gap-10">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-1 bg-blue-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">System Command</span>
+              <div className="w-8 sm:w-12 h-1 bg-blue-600" />
+              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">System Command</span>
             </div>
-            <h1 className="text-6xl font-black tracking-tighter italic leading-none">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter italic leading-none">
               ADMIN <span className="text-blue-600">OPS</span>
             </h1>
-            <p className="text-gray-500 font-medium max-w-md leading-relaxed">
-              Global intelligence oversight and clinical governance terminal. <span className="text-blue-500/50">Core Version 1.1.2</span>
+            <p className="text-sm sm:text-base text-gray-500 font-medium max-w-md leading-relaxed">
+              Global intelligence oversight and clinical governance terminal. <span className="text-blue-500/50 text-xs truncate">Core Version 1.1.2</span>
             </p>
           </div>
           
-          <div className="flex p-1.5 bg-white/5 backdrop-blur-2xl rounded-[2rem] border border-white/10 shadow-2xl">
+          <div className="flex flex-wrap p-1 gap-1 sm:p-1.5 bg-white/5 backdrop-blur-2xl rounded-2xl sm:rounded-[2rem] border border-white/10 shadow-2xl">
             <button 
               onClick={() => setView('admin')}
               className={cn(
-                "flex items-center gap-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-500",
+                "flex-1 sm:flex-none flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-[1.5rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all duration-500",
                 view === 'admin' 
                   ? "bg-blue-600 text-white shadow-[0_0_40px_rgba(37,99,235,0.3)] scale-105" 
                   : "text-gray-500 hover:text-white"
               )}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-3 h-3 sm:w-4 sm:h-4" />
               Intelligence
             </button>
             <button 
               onClick={() => setView('patient')}
               className={cn(
-                "flex items-center gap-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-500",
+                "flex-1 sm:flex-none flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-[1.5rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all duration-500",
                 view === 'patient' 
                   ? "bg-rose-600 text-white shadow-[0_0_40px_rgba(225,29,72,0.3)] scale-105" 
                   : "text-gray-500 hover:text-white"
               )}
             >
-              <HeartPulse className="w-4 h-4" />
+              <HeartPulse className="w-3 h-3 sm:w-4 sm:h-4" />
               Simulator
             </button>
           </div>
@@ -98,35 +98,35 @@ const AdminDashboard: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-16"
+              className="space-y-12 sm:space-y-16"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                 <StatCard icon={<Users className="w-6 h-6" />} label="Total Nodes" value={stats.total.toString()} trend="+24% Capacity" color="blue" />
                 <StatCard icon={<Shield className="w-6 h-6" />} label="Clinical verified" value={stats.doctors.toString()} trend="Operational" color="emerald" />
                 <StatCard icon={<Activity className="w-6 h-6" />} label="Network Latency" value="12ms" trend="Optimal" color="orange" />
                 <StatCard icon={<Settings className="w-6 h-6" />} label="System Kernel" value="Stable" trend="No Anomalies" color="purple" />
               </div>
 
-              <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[4rem] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden transition-all">
-                <div className="p-12 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden transition-all">
+                <div className="p-8 sm:p-12 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
-                    <h2 className="text-3xl font-black tracking-tighter flex items-center gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tighter flex items-center flex-wrap gap-4">
                       Identity Registry 
-                      <span className="font-serif italic text-blue-500 opacity-50 text-xl font-normal lowercase">governance</span>
+                      <span className="font-serif italic text-blue-500 opacity-50 text-lg sm:text-xl font-normal lowercase">governance</span>
                     </h2>
-                    <p className="text-gray-500 font-medium mt-2">Managing access hierarchy across decentralized nodes.</p>
+                    <p className="text-sm sm:text-base text-gray-500 font-medium mt-2">Managing access hierarchy across decentralized nodes.</p>
                   </div>
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-5 bg-blue-600 text-white rounded-[1.5rem] shadow-xl shadow-blue-600/20 flex items-center gap-3 font-black uppercase text-[10px] tracking-widest"
+                    className="p-4 sm:p-5 bg-blue-600 text-white rounded-2xl sm:rounded-[1.5rem] shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 font-black uppercase text-[10px] tracking-widest w-full sm:w-auto"
                   >
                     <UserPlus className="w-5 h-5" />
                     Provision Entity
                   </motion.button>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                       <tr className="bg-white/5 text-gray-500 text-[10px] uppercase font-black tracking-[0.3em]">
                         <th className="px-12 py-8 border-b border-white/5">Entity (UID)</th>

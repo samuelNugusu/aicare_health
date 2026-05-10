@@ -47,37 +47,37 @@ const DoctorDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <header className="mb-16 flex flex-col md:flex-row md:items-center justify-between gap-10 px-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <header className="mb-12 sm:mb-16 flex flex-col md:flex-row md:items-center justify-between gap-8 sm:gap-10 px-2">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic">CLINICAL OPS</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium tracking-tight">Active patient monitoring and diagnostic review.</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic uppercase">CLINICAL <span className="text-blue-600">OPS</span></h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium tracking-tight text-sm sm:text-base">Active patient monitoring and diagnostic review.</p>
           </div>
           
           <div className="relative group w-full md:w-96">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
             <input 
               type="text" 
-              placeholder="Search by identity or email..." 
+              placeholder="Search registry..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-8 py-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2rem] text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/10 shadow-sm transition-all dark:text-white"
+              className="w-full pl-14 pr-8 py-4 sm:py-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl sm:rounded-[2rem] text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/10 shadow-sm transition-all dark:text-white"
             />
           </div>
         </header>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
           <DocStat icon={<Users className="w-6 h-6" />} label="Patient Load" value={stats.active.toString()} color="blue" />
           <DocStat icon={<Activity className="w-6 h-6" />} label="System Sync" value="Live" color="emerald" />
           <DocStat icon={<Clipboard className="w-6 h-6" />} label="Reports" value="14" color="orange" />
           <DocStat icon={<AlertCircle className="w-6 h-6" />} label="Anomalies" value={stats.pending.toString()} color="red" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-10">
+        <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">
+          <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             <div className="flex items-center justify-between px-4">
-              <h3 className="font-black text-2xl text-gray-900 dark:text-white tracking-tighter uppercase">Registry</h3>
-              <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-full uppercase tracking-widest border border-blue-100 dark:border-blue-800/30">
+              <h3 className="font-black text-xl sm:text-2xl text-gray-900 dark:text-white tracking-tighter uppercase whitespace-nowrap">Registry</h3>
+              <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[8px] sm:text-[10px] font-black rounded-full uppercase tracking-widest border border-blue-100 dark:border-blue-800/30">
                 Sorted by Activity
               </div>
             </div>
@@ -90,27 +90,27 @@ const DoctorDashboard: React.FC = () => {
                   transition={{ delay: i * 0.05 }}
                   key={p.id} 
                   onClick={() => setSelectedPatientId(p.id)}
-                  className="p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between group cursor-pointer"
+                  className="p-6 sm:p-8 bg-white dark:bg-gray-900 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group cursor-pointer"
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-[1.25rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner overflow-hidden border border-gray-100 dark:border-gray-700">
-                        {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : <Clipboard className="w-7 h-7" />}
+                  <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-[1.25rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner overflow-hidden border border-gray-100 dark:border-gray-700">
+                        {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : <Clipboard className="w-6 h-6 sm:w-7 sm:h-7" />}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 bg-emerald-500" />
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white dark:border-gray-900 bg-emerald-500" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-black text-gray-900 dark:text-gray-100 tracking-tight">{p.displayName || 'Anonymous'}</h4>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{p.email}</p>
+                    <div className="truncate flex-1">
+                      <h4 className="text-base sm:text-lg font-black text-gray-900 dark:text-gray-100 tracking-tight truncate">{p.displayName || 'Anonymous'}</h4>
+                      <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5 truncate">{p.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <div className="hidden md:flex flex-col items-end">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Status</span>
-                      <span className="text-sm font-black text-emerald-500 italic">OPTIMAL</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t border-gray-50 sm:border-0 dark:border-gray-800">
+                    <div className="flex flex-col items-start sm:items-end">
+                      <span className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Status</span>
+                      <span className="text-xs sm:text-sm font-black text-emerald-500 italic uppercase">Optimal</span>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">
-                      <ChevronRight className="w-5 h-5" />
+                    <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl sm:rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
                 </motion.div>
@@ -170,12 +170,12 @@ const DocStat = ({ icon, label, value, color }: { icon: React.ReactNode, label: 
     red: 'bg-red-600 text-white'
   };
   return (
-    <div className="p-8 rounded-[2.5rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm group hover:scale-[1.02] transition-all">
-      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg ${colors[color]}`}>
-        {icon}
+    <div className="p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm group hover:scale-[1.02] transition-all">
+      <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 shadow-lg ${colors[color]}`}>
+        <div className="scale-75 sm:scale-100">{icon}</div>
       </div>
-      <div className="text-3xl font-black text-gray-900 dark:text-white italic tracking-tighter mb-1 uppercase">{value}</div>
-      <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{label}</div>
+      <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white italic tracking-tighter mb-1 uppercase">{value}</div>
+      <div className="text-[8px] sm:text-[10px] text-gray-400 font-black uppercase tracking-widest">{label}</div>
     </div>
   );
 };
