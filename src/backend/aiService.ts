@@ -60,11 +60,13 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
     
+    console.log(`Starting Gemini analysis with model gemini-3-flash-preview...`);
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: { parts },
       config: { responseMimeType: "application/json" }
     });
+    console.log("Gemini response received.");
     return JSON.parse(response.text || '{}');
   } else if (provider === 'openai') {
 // ... existing openai ...
@@ -101,14 +103,7 @@ export async function getHealthAssistantResponse(
       parts: [{ text: h.content }]
     }));
 
-    const chat = ai.chats.create({
-      model: "gemini-1.5-flash",
-      history: chatHistory as any,
-      config: {
-        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
-      }
-    });
-
+    console.log(`Starting Gemini chat with model gemini-3-flash-preview...`);
     const parts: any[] = [{ text: message }];
     if (base64Image) {
       const mimeMatch = base64Image.match(/^data:([^;]+);base64,/);
@@ -116,9 +111,20 @@ export async function getHealthAssistantResponse(
       const base64Data = base64Image.split(',')[1] || base64Image;
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        ...chatHistory,
+        { role: 'user', parts }
+      ],
+      config: {
+        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+      }
+    });
     
-    const result = await chat.sendMessage({ message: parts });
-    return result.text;
+    console.log("Gemini chat response received.");
+    return response.text;
   } else if (provider === 'openai') {
     const openai = getOpenAI();
     const messages: any[] = [
