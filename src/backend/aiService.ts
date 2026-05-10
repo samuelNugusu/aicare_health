@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
@@ -5,9 +6,20 @@ dotenv.config();
 
 export type AIProvider = 'gemini' | 'openai';
 
-const getOpenAIKey = () => process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY || "";
+const getGeminiKey = () => process.env.GEMINI_API_KEY || "";
+const getOpenAIKey = () => process.env.OPENAI_API_KEY || "";
 
+let geminiClient: GoogleGenAI | null = null;
 let openaiClient: OpenAI | null = null;
+
+function getGemini() {
+  if (!geminiClient) {
+    const key = getGeminiKey();
+    if (!key) throw new Error("GEMINI_API_KEY is missing on server.");
+    geminiClient = new GoogleGenAI({ apiKey: key });
+  }
+  return geminiClient;
+}
 
 function getOpenAI() {
   if (!openaiClient) {
@@ -36,8 +48,26 @@ Output format should be JSON:
 }
 `;
 
-export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'openai') {
-  if (provider === 'openai') {
+export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
+  if (provider === 'gemini') {
+    const ai = getGemini();
+    const parts: any[] = [{ text: ANALYSIS_PROMPT }];
+    if (input.text) parts.push({ text: `Lab Result Text: ${input.text}` });
+    if (input.base64Image) {
+      const mimeMatch = input.base64Image.match(/^data:([^;]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = input.base64Image.split(',')[1] || input.base64Image;
+      parts.push({ inlineData: { data: base64Data, mimeType } });
+    }
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: { parts },
+      config: { responseMimeType: "application/json" }
+    });
+    return JSON.parse(response.text || '{}');
+  } else if (provider === 'openai') {
+// ... existing openai ...
     const openai = getOpenAI();
     const messages: any[] = [
       { role: "system", content: "You are an expert AI Health Diagnostic Assistant. Always return JSON." },
@@ -61,9 +91,35 @@ export async function getHealthAssistantResponse(
   history: { role: 'user' | 'model' | 'assistant'; content: string }[], 
   message: string, 
   base64Image?: string,
-  provider: AIProvider = 'openai'
+  provider: AIProvider = 'gemini'
 ) {
-  if (provider === 'openai') {
+  if (provider === 'gemini') {
+    const ai = getGemini();
+    
+    const chatHistory = history.map(h => ({
+      role: h.role === 'assistant' ? 'model' : h.role,
+      parts: [{ text: h.content }]
+    }));
+
+    const chat = ai.chats.create({
+      model: "gemini-1.5-flash",
+      history: chatHistory as any,
+      config: {
+        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+      }
+    });
+
+    const parts: any[] = [{ text: message }];
+    if (base64Image) {
+      const mimeMatch = base64Image.match(/^data:([^;]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = base64Image.split(',')[1] || base64Image;
+      parts.push({ inlineData: { data: base64Data, mimeType } });
+    }
+    
+    const result = await chat.sendMessage({ message: parts });
+    return result.text;
+  } else if (provider === 'openai') {
     const openai = getOpenAI();
     const messages: any[] = [
       { role: "system", content: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns." },
