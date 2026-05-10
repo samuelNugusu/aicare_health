@@ -15,6 +15,23 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // If element not found, we're likely on a different page
+      navigate(`/#${id}`);
+      // The browser usually handles the hash on load, but we can help it
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
   const handleSignOut = () => {
     signOut(auth);
     navigate('/');
@@ -34,8 +51,8 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-400">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
-          <a href="/#features" className="hover:text-blue-600 transition-colors">Features</a>
-          <a href="/#assistant" className="hover:text-blue-600 transition-colors">AI Assistant</a>
+          <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-blue-600 transition-colors">Features</a>
+          <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="hover:text-blue-600 transition-colors">AI Assistant</a>
           {user && (
             <Link to="/dashboard" className="flex items-center gap-1.5 text-blue-600 font-bold">
               <LayoutDashboard className="w-4 h-4" />
@@ -115,8 +132,8 @@ export default function Navbar() {
           >
             <div className="px-4 py-8 space-y-6 flex flex-col items-center text-center">
               <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-gray-900 dark:text-white">Home</Link>
-              <a href="/#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-gray-900 dark:text-white">Features</a>
-              <a href="/#assistant" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-gray-900 dark:text-white">AI Assistant</a>
+              <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-lg font-bold text-gray-900 dark:text-white">Features</a>
+              <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="text-lg font-bold text-gray-900 dark:text-white">AI Assistant</a>
               
               {user ? (
                 <>
