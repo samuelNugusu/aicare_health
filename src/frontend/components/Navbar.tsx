@@ -19,6 +19,12 @@ export default function Navbar() {
     e.preventDefault();
     setIsMobileMenuOpen(false);
     
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      navigate('/');
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -28,7 +34,7 @@ export default function Navbar() {
       // The browser usually handles the hash on load, but we can help it
       setTimeout(() => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      }, 300); // Increased timeout for reliability on mobile
     }
   };
 
@@ -50,7 +56,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-400">
-          <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <a href="/" onClick={(e) => scrollToSection(e, 'top')} className="hover:text-blue-600 transition-colors">Home</a>
           <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-blue-600 transition-colors">Features</a>
           <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="hover:text-blue-600 transition-colors">AI Assistant</a>
           {user && (
@@ -131,7 +137,7 @@ export default function Navbar() {
             className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 overflow-hidden"
           >
             <div className="px-4 py-8 space-y-6 flex flex-col items-center text-center">
-              <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-gray-900 dark:text-white">Home</Link>
+              <a href="/" onClick={(e) => scrollToSection(e, 'top')} className="text-lg font-bold text-gray-900 dark:text-white">Home</a>
               <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-lg font-bold text-gray-900 dark:text-white">Features</a>
               <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="text-lg font-bold text-gray-900 dark:text-white">AI Assistant</a>
               
