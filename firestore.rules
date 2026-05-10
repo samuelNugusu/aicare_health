@@ -38,7 +38,9 @@ service cloud.firestore {
       // Lab Results subcollection
       match /lab_results/{resultId} {
         allow read: if isOwner(userId) || isDoctor() || isAdmin();
-        allow write: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) || isAdmin();
+        allow update: if isOwner(userId) || isDoctor() || isAdmin();
+        allow delete: if isAdmin();
       }
 
       // Messages subcollection
@@ -52,6 +54,12 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isDoctor() || isAdmin();
         allow write: if isOwner(userId) || isAdmin();
       }
+    }
+
+    // Support collectionGroup queries for lab_results
+    match /{path=**}/lab_results/{resultId} {
+      allow list: if isAdmin() || isDoctor();
+      allow read: if isAdmin() || isDoctor();
     }
   }
 }

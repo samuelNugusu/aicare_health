@@ -60,15 +60,19 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: { parts },
-      config: { responseMimeType: "application/json" }
+      config: { 
+        responseMimeType: "application/json",
+        systemInstruction: "CRITICAL: You are an expert AI Health/Medical Diagnostic Assistant. You ONLY analyze lab results and medical reports. If the provided data is NOT a medical lab result or health report, you must return a JSON response where 'summary' explains that you are strictly limited to medical report analysis and cannot process other types of information. DO NOT speculate on non-medical data."
+      }
     });
+
     const text = response.text || "{}";
     const cleanJson = text.replace(/```json\n?|\n?```/g, "").trim();
     return JSON.parse(cleanJson);
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
-      { role: "system", content: "You are an expert AI Health Diagnostic Assistant. Always return JSON." },
+      { role: "system", content: "CRITICAL: You are an expert AI Health/Medical Diagnostic Assistant. You ONLY analyze lab results and medical reports. Strictly return JSON. If the data is not a medical report, your summary must politely state you only handle health-related records." },
       { role: "user", content: ANALYSIS_PROMPT }
     ];
     if (input.text) messages.push({ role: "user", content: `Lab Result Text: ${input.text}` });
@@ -81,12 +85,18 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       });
     }
     
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages,
-      response_format: { type: "json_object" }
-    });
-    return JSON.parse(completion.choices[0].message.content || '{}');
+    try {
+      console.log("Analyzing with OpenAI...");
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages,
+        response_format: { type: "json_object" }
+      });
+      return JSON.parse(completion.choices[0].message.content || '{}');
+    } catch (err: any) {
+      console.warn("OpenAI Analysis 429/Error detected. Triggering Gemini Fallback.");
+      return analyzeLabResult(input, 'gemini');
+    }
   }
 }
 
@@ -118,7 +128,7 @@ export async function getHealthAssistantResponse(
         { role: 'user', parts }
       ],
       config: {
-        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+        systemInstruction: "CRITICAL: You are AiCare Medical Assistant. You ONLY respond to health, medical, wellness, and laboratory-related queries. If the user asks about anything non-medical (e.g., politics, unrelated tech, casual chat), you MUST politely refuse and state your medical specialization. Do NOT break character."
       }
     });
     
@@ -126,7 +136,7 @@ export async function getHealthAssistantResponse(
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
-      { role: "system", content: "You are AiCare Assistant, a professional health coach and medical information specialist." },
+      { role: "system", content: "CRITICAL: You are AiCare Medical Assistant. You ONLY respond to health, medical, wellness, and laboratory-related queries. If the user asks about anything non-medical, you MUST politely refuse and state your medical specialization." },
       ...history.map(h => ({ role: h.role === 'model' ? 'assistant' : h.role, content: h.content })),
     ];
 
@@ -142,10 +152,17 @@ export async function getHealthAssistantResponse(
       messages.push({ role: "user", content: message });
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages
-    });
-    return completion.choices[0].message.content;
+    try {
+      console.log("Chatting with OpenAI...");
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages
+      });
+      return completion.choices[0].message.content;
+    } catch (err: any) {
+      console.warn("OpenAI Chat 429/Error detected. Triggering Gemini Fallback.");
+      // Fallback to Gemini if OpenAI fails
+      return getHealthAssistantResponse(history, message, base64Image, 'gemini');
+    }
   }
 }

@@ -1,11 +1,20 @@
 import { motion } from 'motion/react';
-import { Activity, AlertTriangle, CheckCircle2, Info, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle2, Info, ArrowUpRight, ArrowDownRight, Minus, ShieldCheck } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import { LabAnalysisData } from '../../../shared/types';
 
-export default function AnalysisResults({ data }: { data: LabAnalysisData }) {
+interface AnalysisResultsProps {
+  data: LabAnalysisData;
+  isDoctor?: boolean;
+  status?: string;
+  onVerify?: () => void;
+  isVerifying?: boolean;
+}
+
+export default function AnalysisResults({ data, isDoctor, status, onVerify, isVerifying }: AnalysisResultsProps) {
   const getStatusConfig = (status: string) => {
     switch (status) {
+      case 'verified': return { icon: ShieldCheck, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-100 dark:border-emerald-900/40', label: 'Verified' };
       case 'critical': return { icon: AlertTriangle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-100 dark:border-red-900/40', label: 'Critical' };
       case 'high': return { icon: ArrowUpRight, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30', border: 'border-orange-100 dark:border-orange-900/40', label: 'High' };
       case 'low': return { icon: ArrowDownRight, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-100 dark:border-blue-900/40', label: 'Low' };
@@ -19,13 +28,33 @@ export default function AnalysisResults({ data }: { data: LabAnalysisData }) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 lg:p-10 border border-gray-100 dark:border-gray-800 shadow-xl transition-colors"
+        className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 lg:p-10 border border-gray-100 dark:border-gray-800 shadow-xl transition-colors relative overflow-hidden"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
-            <Activity className="w-6 h-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Activity className="w-6 h-6" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">AI Health Summary</h3>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">AI Health Summary</h3>
+          
+          {isDoctor && status !== 'verified' && (
+            <button 
+              onClick={onVerify}
+              disabled={isVerifying}
+              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              {isVerifying ? 'Processing...' : 'Verify Diagnosis'}
+            </button>
+          )}
+
+          {status === 'verified' && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-800/30 text-[10px] font-black uppercase tracking-widest">
+              <ShieldCheck className="w-4 h-4" />
+              Physician Verified
+            </div>
+          )}
         </div>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
           {data.summary}

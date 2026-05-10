@@ -27,7 +27,9 @@
         "fileName": { "type": "string" },
         "fileUrl": { "type": "string" },
         "uploadDate": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["pending", "processing", "completed", "error"] },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "error", "failed", "verified"] },
+        "verifiedBy": { "type": "string", "description": "Doctor UID who verified the result" },
+        "performedBy": { "type": "string", "description": "Doctor UID who performed/reviewed the diagnosis" },
         "rawText": { "type": "string" },
         "analysis": {
           "type": "object",

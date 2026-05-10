@@ -1,23 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
-import { collection, query, orderBy, onSnapshot, where, limit, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, limit, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '../../utils/utils';
 import LabUpload from '../lab/LabUpload';
 import HealthMetrics from './HealthMetrics';
+import AnalysisResults from '../lab/AnalysisResults';
 
 interface PatientDashboardProps {
   patientId?: string;
 }
 
 const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
-  const { user } = useAuth();
+  const { user, roleData } = useAuth();
   const effectiveUserId = patientId || user?.uid;
   const isViewingSelf = !patientId || patientId === user?.uid;
+  const isDoctor = roleData?.role === 'doctor';
   
   const [results, setResults] = useState<any[]>([]);
+  const [diagnosisStats, setDiagnosisStats] = useState({ completed: 0, verified: 0, failed: 0 });
   const [doctors, setDoctors] = useState<any[]>([]);
   const [patientData, setPatientData] = useState<any>(null);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleVerify = async (resultId: string) => {
+    if (!user || !effectiveUserId) return;
+    setIsVerifying(true);
+    try {
+      await updateDoc(doc(db, `users/${effectiveUserId}/lab_results`, resultId), {
+        status: 'verified',
+        verifiedBy: user.uid,
+        performedBy: user.uid
+      });
+      setSelectedResult(null);
+    } catch (err) {
+      console.error("Verification failed:", err);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   useEffect(() => {
     if (!effectiveUserId) return;
@@ -33,14 +57,33 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
 
   useEffect(() => {
     if (!effectiveUserId) return;
+    
+    // Fetch all results for stats (maybe limit to a reasonable number for performance)
+    const qStats = query(collection(db, `users/${effectiveUserId}/lab_results`));
+    const unsubStats = onSnapshot(qStats, (snap) => {
+      const stats = snap.docs.reduce((acc, doc) => {
+        const s = doc.data().status;
+        if (s === 'completed') acc.completed++;
+        else if (s === 'verified') acc.verified++;
+        else if (s === 'failed' || s === 'error') acc.failed++;
+        return acc;
+      }, { completed: 0, verified: 0, failed: 0 });
+      setDiagnosisStats(stats);
+    });
+
     const q = query(
       collection(db, `users/${effectiveUserId}/lab_results`),
       orderBy('uploadDate', 'desc'),
       limit(5)
     );
-    return onSnapshot(q, (snap) => {
+    const unsubResults = onSnapshot(q, (snap) => {
       setResults(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
+
+    return () => {
+      unsubStats();
+      unsubResults();
+    };
   }, [effectiveUserId]);
 
   useEffect(() => {
@@ -80,6 +123,21 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
         </div>
       </header>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-2">
+        <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Clinical Revisions</div>
+          <div className="text-2xl font-black text-blue-600 italic tracking-tighter">{diagnosisStats.verified} Verified</div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Processing Queue</div>
+          <div className="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{diagnosisStats.completed} Active</div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">System Anomalies</div>
+          <div className="text-2xl font-black text-rose-500 italic tracking-tighter">{diagnosisStats.failed} Failed</div>
+        </div>
+      </div>
+
       <section>
         <HealthMetrics userId={effectiveUserId} readOnly={!isViewingSelf} />
       </section>
@@ -98,7 +156,11 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
             
             <div className="grid gap-3 sm:gap-4">
               {results.map((res, i) => (
-                <div key={i} className="group p-5 sm:p-6 bg-white dark:bg-gray-900 rounded-3xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between cursor-pointer">
+                <div 
+                  key={i} 
+                  onClick={() => setSelectedResult(res)}
+                  className="group p-5 sm:p-6 bg-white dark:bg-gray-900 rounded-3xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between cursor-pointer"
+                >
                   <div className="flex items-center gap-4 sm:gap-6 min-w-0">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm flex-shrink-0">
                       <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -109,7 +171,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
                         <Clock className="w-3 h-3" />
                         <span>{res.uploadDate?.toDate ? new Date(res.uploadDate.toDate()).toLocaleDateString() : 'Processing'}</span>
                         <span className="hidden sm:block w-1 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
-                        <span className={`font-black uppercase tracking-widest text-[8px] sm:text-[10px] ${res.status === 'completed' ? 'text-emerald-500' : 'text-orange-500'}`}>
+                        <span className={`font-black uppercase tracking-widest text-[8px] sm:text-[10px] flex items-center gap-1 ${res.status === 'verified' ? 'text-emerald-500' : res.status === 'completed' ? 'text-blue-500' : 'text-orange-500'}`}>
+                          {res.status === 'verified' && <ShieldCheck className="w-3 h-3" />}
                           {res.status}
                         </span>
                       </div>
@@ -186,6 +249,55 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
            </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedResult && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedResult(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 dark:bg-gray-950 rounded-[3rem] p-6 sm:p-10 shadow-2xl"
+            >
+              <button 
+                onClick={() => setSelectedResult(null)}
+                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              
+              <div className="mb-10">
+                <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase italic">{selectedResult.fileName}</h2>
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="text-xs font-black text-gray-400 uppercase tracking-widest">{new Date(selectedResult.uploadDate?.toDate()).toLocaleDateString()}</div>
+                  <div className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                    selectedResult.status === 'verified' ? "bg-emerald-500 text-white" : "bg-blue-100 text-blue-600"
+                  )}>
+                    {selectedResult.status}
+                  </div>
+                </div>
+              </div>
+
+              <AnalysisResults 
+                data={selectedResult.analysis} 
+                isDoctor={isDoctor}
+                status={selectedResult.status}
+                onVerify={() => handleVerify(selectedResult.id)}
+                isVerifying={isVerifying}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

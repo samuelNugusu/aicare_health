@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
-import { collection, query, onSnapshot, where, limit, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, where, limit, orderBy, collectionGroup } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Search, Clipboard, Calendar, MessageSquare, ExternalLink, Activity, Users, AlertCircle, ChevronRight } from 'lucide-react';
+import { Search, Clipboard, Calendar, MessageSquare, ExternalLink, Activity, Users, AlertCircle, ChevronRight, HeartPulse } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
 import { cn } from '../../utils/utils';
@@ -12,17 +12,38 @@ const DoctorDashboard: React.FC = () => {
   const [patients, setPatients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [stats, setStats] = useState({ active: 0, pending: 0 });
+  const [stats, setStats] = useState({ active: 0, performed: 0, verified: 0, helped: 0 });
 
   useEffect(() => {
     const q = query(collection(db, 'users'), where('role', '==', 'client'), limit(20));
-    const unsubscribe = onSnapshot(q, (snap) => {
+    const unsubscribePatients = onSnapshot(q, (snap) => {
       const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPatients(list);
-      setStats({ active: list.length, pending: 2 });
+      setStats(s => ({ ...s, active: list.length }));
     });
-    return () => unsubscribe();
-  }, []);
+
+    if (user?.uid) {
+      const labQ = query(collectionGroup(db, 'lab_results'), where('performedBy', '==', user.uid));
+      const unsubscribeLabs = onSnapshot(labQ, (snap) => {
+        const labs = snap.docs.map(d => ({ ...d.data(), userId: d.ref.parent.parent?.id }));
+        const helpedIds = new Set(labs.map(l => l.userId).filter(Boolean));
+        setStats(s => ({
+          ...s,
+          performed: labs.length,
+          verified: labs.filter(l => l.status === 'verified').length,
+          helped: helpedIds.size
+        }));
+      }, (error) => {
+        console.warn("Doctor Labs CollectionGroup Error (check indexes):", error);
+      });
+      return () => {
+        unsubscribePatients();
+        unsubscribeLabs();
+      };
+    }
+
+    return () => unsubscribePatients();
+  }, [user?.uid]);
 
   const filteredPatients = patients.filter(p => 
     p.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -68,9 +89,9 @@ const DoctorDashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
           <DocStat icon={<Users className="w-6 h-6" />} label="Patient Load" value={stats.active.toString()} color="blue" />
-          <DocStat icon={<Activity className="w-6 h-6" />} label="System Sync" value="Live" color="emerald" />
-          <DocStat icon={<Clipboard className="w-6 h-6" />} label="Reports" value="14" color="orange" />
-          <DocStat icon={<AlertCircle className="w-6 h-6" />} label="Anomalies" value={stats.pending.toString()} color="red" />
+          <DocStat icon={<Clipboard className="w-6 h-6" />} label="Diagnoses Performed" value={stats.performed.toString()} color="orange" />
+          <DocStat icon={<Activity className="w-6 h-6" />} label="Verified Diags" value={stats.verified.toString()} color="emerald" />
+          <DocStat icon={<HeartPulse className="w-6 h-6" />} label="Patients Helped" value={stats.helped.toString()} color="purple" />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">

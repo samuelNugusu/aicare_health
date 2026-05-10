@@ -5,17 +5,18 @@ import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
 import { cn } from '../../utils/utils';
 import { db } from '../../firebase/firebase';
-import { collection, query, onSnapshot, doc, updateDoc, getCountFromServer } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, getCountFromServer, collectionGroup } from 'firebase/firestore';
 
 const AdminDashboard: React.FC = () => {
   const { user, roleData } = useAuth();
   const [view, setView] = useState<'admin' | 'patient'>('admin');
   const [users, setUsers] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, doctors: 0, clients: 0 });
+  const [diagnosisStats, setDiagnosisStats] = useState({ completed: 0, verified: 0, failed: 0, total: 0 });
 
   useEffect(() => {
     const q = query(collection(db, 'users'));
-    const unsubscribe = onSnapshot(q, (snap) => {
+    const unsubscribeUsers = onSnapshot(q, (snap) => {
       const userList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
       setUsers(userList);
       
@@ -26,9 +27,29 @@ const AdminDashboard: React.FC = () => {
         return acc;
       }, { total: 0, doctors: 0, clients: 0 });
       setStats(counts);
+    }, (error) => {
+      console.error("Admin Users Fetch Error:", error);
     });
 
-    return () => unsubscribe();
+    const labQ = query(collectionGroup(db, 'lab_results'));
+    const unsubscribeLabs = onSnapshot(labQ, (snap) => {
+      const labCounts = snap.docs.reduce((acc, doc) => {
+        const status = doc.data().status;
+        if (status === 'completed') acc.completed++;
+        else if (status === 'verified') acc.verified++;
+        else if (status === 'failed' || status === 'error') acc.failed++;
+        acc.total++;
+        return acc;
+      }, { completed: 0, verified: 0, failed: 0, total: 0 });
+      setDiagnosisStats(labCounts);
+    }, (error) => {
+      console.warn("Admin Labs CollectionGroup Error (check indexes):", error);
+    });
+
+    return () => {
+      unsubscribeUsers();
+      unsubscribeLabs();
+    };
   }, []);
 
   const updateUserRole = async (userId: string, newRole: string) => {
@@ -101,10 +122,10 @@ const AdminDashboard: React.FC = () => {
               className="space-y-12 sm:space-y-16"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                <StatCard icon={<Users className="w-6 h-6" />} label="Total Nodes" value={stats.total.toString()} trend="+24% Capacity" color="blue" />
-                <StatCard icon={<Shield className="w-6 h-6" />} label="Clinical verified" value={stats.doctors.toString()} trend="Operational" color="emerald" />
-                <StatCard icon={<Activity className="w-6 h-6" />} label="Network Latency" value="12ms" trend="Optimal" color="orange" />
-                <StatCard icon={<Settings className="w-6 h-6" />} label="System Kernel" value="Stable" trend="No Anomalies" color="purple" />
+                <StatCard icon={<Users className="w-6 h-6" />} label="Patient Nodes" value={stats.clients.toString()} trend={`${stats.total} Total Entities`} color="blue" />
+                <StatCard icon={<Shield className="w-6 h-6" />} label="Clinical Nodes" value={stats.doctors.toString()} trend="Operational" color="emerald" />
+                <StatCard icon={<Activity className="w-6 h-6" />} label="Verified Diags" value={diagnosisStats.verified.toString()} trend="Clinical Review" color="purple" />
+                <StatCard icon={<Settings className="w-6 h-6" />} label="Active Queue" value={diagnosisStats.completed.toString()} trend={`${diagnosisStats.failed} system failures`} color="orange" />
               </div>
 
               <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden transition-all">
