@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { analyzeLabResult, getHealthAssistantResponse } from "./aiService";
+import { analyzeLabResult, getHealthAssistantResponse } from "./aiService.js";
 
 // Load environment variables
 dotenv.config();
