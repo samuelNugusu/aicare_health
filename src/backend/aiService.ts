@@ -59,12 +59,13 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       const base64Data = input.base64Image.split(',')[1] || input.base64Image;
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const response = await model.generateContent({
-      contents: [{ role: "user", parts }],
-      generationConfig: { responseMimeType: "application/json" }
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { parts },
+      config: { responseMimeType: "application/json" }
     });
-    return JSON.parse(response.response.text());
+    return JSON.parse(response.text);
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
@@ -92,18 +93,18 @@ export async function getHealthAssistantResponse(
 ) {
   if (provider === 'gemini') {
     const ai = getGemini();
-    const model = ai.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
-    });
-
+    
     const chatHistory = history.map(h => ({
       role: h.role === 'assistant' ? 'model' : h.role,
       parts: [{ text: h.content }]
     }));
 
-    const chat = model.startChat({
-      history: chatHistory
+    const chat = ai.chats.create({
+      model: "gemini-3-flash-preview",
+      history: chatHistory,
+      config: {
+        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+      }
     });
 
     const parts: any[] = [{ text: message }];
@@ -113,8 +114,9 @@ export async function getHealthAssistantResponse(
       const base64Data = base64Image.split(',')[1] || base64Image;
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
-    const result = await chat.sendMessage(parts);
-    return result.response.text();
+    
+    const result = await chat.sendMessage({ message: parts });
+    return result.text;
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
