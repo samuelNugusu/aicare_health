@@ -12,7 +12,7 @@
     "start": "node dist/server.cjs"
   },
   "dependencies": {
-    "@google/genai": "^1.29.0",
+    "@google/genai": "^2.0.1",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
@@ -24,7 +24,7 @@
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
-    "openai": "^6.37.0",
+    "openai": "^4.85.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-markdown": "^10.1.0",

@@ -1,10 +1,13 @@
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 export type AIProvider = 'gemini' | 'openai';
 
 const getOpenAIKey = () => process.env.OPENAI_API_KEY || "";
+const getGeminiKey = () => process.env.GEMINI_API_KEY || "";
 
 let openaiClient: OpenAI | null = null;
+let geminiClient: GoogleGenAI | null = null;
 
 function getOpenAI() {
   if (!openaiClient) {
@@ -13,6 +16,15 @@ function getOpenAI() {
     openaiClient = new OpenAI({ apiKey: key });
   }
   return openaiClient;
+}
+
+function getGemini() {
+  if (!geminiClient) {
+    const key = getGeminiKey();
+    if (!key) throw new Error("GEMINI_API_KEY is missing on server.");
+    geminiClient = new GoogleGenAI({ apiKey: key });
+  }
+  return geminiClient;
 }
 
 const ANALYSIS_PROMPT = `
@@ -35,30 +47,47 @@ Output format should be JSON:
 
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
   if (provider === 'gemini') {
-    throw new Error("Gemini analysis should be handled on the frontend.");
-  }
-  
-  const openai = getOpenAI();
-  const messages: any[] = [
-    { role: "system", content: "You are an expert AI Health Diagnostic Assistant. Always return JSON." },
-    { role: "user", content: ANALYSIS_PROMPT }
-  ];
-  if (input.text) messages.push({ role: "user", content: `Lab Result Text: ${input.text}` });
-  if (input.base64Image) {
-    messages.push({ 
-      role: "user", 
-      content: [
-        { type: "image_url", image_url: { url: input.base64Image } }
-      ] 
+    const ai = getGemini();
+    const parts: any[] = [{ text: ANALYSIS_PROMPT }];
+    if (input.text) parts.push({ text: `Lab Result Text: ${input.text}` });
+    if (input.base64Image) {
+      const mimeMatch = input.base64Image.match(/^data:([^;]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = input.base64Image.split(',')[1] || input.base64Image;
+      parts.push({ inlineData: { data: base64Data, mimeType } });
+    }
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { parts },
+      config: { responseMimeType: "application/json" }
     });
+    const text = response.text || "{}";
+    const cleanJson = text.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(cleanJson);
+  } else {
+    const openai = getOpenAI();
+    const messages: any[] = [
+      { role: "system", content: "You are an expert AI Health Diagnostic Assistant. Always return JSON." },
+      { role: "user", content: ANALYSIS_PROMPT }
+    ];
+    if (input.text) messages.push({ role: "user", content: `Lab Result Text: ${input.text}` });
+    if (input.base64Image) {
+      messages.push({ 
+        role: "user", 
+        content: [
+          { type: "image_url", image_url: { url: input.base64Image } }
+        ] 
+      });
+    }
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages,
+      response_format: { type: "json_object" }
+    });
+    return JSON.parse(completion.choices[0].message.content || '{}');
   }
-  
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages,
-    response_format: { type: "json_object" }
-  });
-  return JSON.parse(completion.choices[0].message.content || '{}');
 }
 
 export async function getHealthAssistantResponse(
@@ -68,30 +97,55 @@ export async function getHealthAssistantResponse(
   provider: AIProvider = 'gemini'
 ) {
   if (provider === 'gemini') {
-    throw new Error("Gemini chat should be handled on the frontend.");
-  }
+    const ai = getGemini();
+    const chatHistory = history.map(h => ({
+      role: (h.role === 'assistant' ? 'model' : h.role) as "user" | "model",
+      parts: [{ text: h.content }]
+    }));
 
-  const openai = getOpenAI();
-  const messages: any[] = [
-    { role: "system", content: "You are AiCare Assistant, a professional health coach and medical information specialist." },
-    ...history.map(h => ({ role: h.role === 'model' ? 'assistant' : h.role, content: h.content })),
-  ];
+    const parts: any[] = [{ text: message }];
+    if (base64Image) {
+      const mimeMatch = base64Image.match(/^data:([^;]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
+      const base64Data = base64Image.split(',')[1] || base64Image;
+      parts.push({ inlineData: { data: base64Data, mimeType } });
+    }
 
-  if (base64Image) {
-    messages.push({
-      role: "user",
-      content: [
-        { type: "text", text: message },
-        { type: "image_url", image_url: { url: base64Image } }
-      ]
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        ...chatHistory,
+        { role: 'user', parts }
+      ],
+      config: {
+        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+      }
     });
+    
+    return response.text;
   } else {
-    messages.push({ role: "user", content: message });
-  }
+    const openai = getOpenAI();
+    const messages: any[] = [
+      { role: "system", content: "You are AiCare Assistant, a professional health coach and medical information specialist." },
+      ...history.map(h => ({ role: h.role === 'model' ? 'assistant' : h.role, content: h.content })),
+    ];
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages
-  });
-  return completion.choices[0].message.content;
+    if (base64Image) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: message },
+          { type: "image_url", image_url: { url: base64Image } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: message });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages
+    });
+    return completion.choices[0].message.content;
+  }
 }

@@ -20,10 +20,20 @@ Output format should be JSON:
 }
 `;
 
+// Helper to initialize Gemini
+function getGeminiClient() {
+  console.log("AiCare AI Service v1.1 - Initializing Gemini Client");
+  const apiKey = (process.env.GEMINI_API_KEY as string) || "";
+  if (!apiKey) {
+    console.warn("GEMINI_API_KEY not found in process.env, AI features might not work on frontend.");
+  }
+  return new GoogleGenAI({ apiKey });
+}
+
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
   if (provider === 'gemini') {
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+      const ai = getGeminiClient();
       const parts: any[] = [{ text: ANALYSIS_PROMPT }];
       if (input.text) parts.push({ text: `Lab Result Text: ${input.text}` });
       if (input.base64Image) {
@@ -40,15 +50,16 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       });
       
       const text = response.text || "{}";
-      // Clean potential markdown code blocks if the model didn't follow JSON only instruction perfectly
       const cleanJson = text.replace(/```json\n?|\n?```/g, "").trim();
       return JSON.parse(cleanJson);
     } catch (error: any) {
-      console.error("Gemini Analysis Error:", error);
-      throw error;
+      console.error("Gemini Analysis Error (Frontend):", error);
+      // Fallback to server if frontend fails (e.g. key exposure or CORS issues in some envs)
+      console.log("Attempting server-side fallback for Gemini...");
     }
   }
 
+  // OpenAI or Gemini fallback
   const response = await fetch('/api/ai/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -70,9 +81,9 @@ export async function getHealthAssistantResponse(
 ) {
   if (provider === 'gemini') {
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+      const ai = getGeminiClient();
       const chatHistory = history.map(h => ({
-        role: h.role === 'assistant' ? 'model' : h.role,
+        role: (h.role === 'assistant' ? 'model' : h.role) as "user" | "model",
         parts: [{ text: h.content }]
       }));
 
@@ -97,8 +108,8 @@ export async function getHealthAssistantResponse(
       
       return response.text;
     } catch (error: any) {
-      console.error("Gemini Chat Error:", error);
-      throw error;
+      console.error("Gemini Chat Error (Frontend):", error);
+      console.log("Attempting server-side fallback for Gemini...");
     }
   }
 
@@ -110,7 +121,13 @@ export async function getHealthAssistantResponse(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`AI chat failed: ${errorText}`);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch(e) {
+      errorData = { error: errorText };
+    }
+    throw new Error(errorData.error || `AI chat failed on server`);
   }
   const data = await response.json();
   return data.result;
