@@ -1,0 +1,7 @@
+{
+  "name": "AiCare Enterprise Health Platform",
+  "description": "An AI-powered health assistant and lab result analyzer with Gemini and GPT-4o integration.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
