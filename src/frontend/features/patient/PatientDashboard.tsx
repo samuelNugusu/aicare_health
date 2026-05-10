@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap } from 'lucide-react';
 import LabUpload from '../lab/LabUpload';
+import HealthMetrics from './HealthMetrics';
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -22,42 +23,51 @@ const PatientDashboard: React.FC = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-12 transition-colors duration-300">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Health Overview</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Welcome back, {user?.displayName?.split(' ')[0]}. Here is your latest data.</p>
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Health Hub</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Welcome back, {user?.displayName?.split(' ')[0]}. Monitoring your vitals in real-time.</p>
         </div>
         <div className="flex gap-4">
-           {/* Summary Cards */}
-           <div className="bg-blue-50 dark:bg-blue-900/20 px-6 py-3 rounded-2xl border border-blue-100 dark:border-blue-800/30 min-w-[200px]">
-              <div className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 tracking-widest mb-1">BMI Status</div>
-              <div className="text-xl font-bold text-blue-900 dark:text-blue-100">22.4 (Normal)</div>
+           <div className="bg-emerald-50 dark:bg-emerald-900/20 px-6 py-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Active Monitoring</div>
            </div>
         </div>
       </header>
 
-      <div className="grid lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 space-y-10">
+      <section>
+        <HealthMetrics />
+      </section>
+
+      <div className="grid lg:grid-cols-3 gap-12 pt-4">
+        <div className="lg:col-span-2 space-y-12">
           <section>
-            <div className="flex items-center justify-between mb-6 px-2">
-              <h2 className="text-xl font-bold dark:text-white">Recent Lab Results</h2>
-              <button className="text-sm font-bold text-blue-600 dark:text-blue-400">View History</button>
+            <div className="flex items-center justify-between mb-8 px-2">
+              <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
+                Recent Reports
+              </h2>
+              <button className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest hover:translate-x-1 transition-transform">
+                Full Records →
+              </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="grid gap-4">
               {results.map((res, i) => (
-                <div key={i} className="group p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase font-bold text-xs">
+                <div key={i} className="group p-6 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/30 transition-all flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                       <FileText className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900 dark:text-gray-100">{res.fileName}</h4>
-                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      <h4 className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight">{res.fileName}</h4>
+                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mt-2">
                         <Clock className="w-3 h-3" />
-                        <span>{new Date(res.uploadDate?.toDate()).toLocaleDateString()}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
-                        <span className="font-medium text-green-600 dark:text-green-400 capitalize">{res.status}</span>
+                        <span>{res.uploadDate?.toDate ? new Date(res.uploadDate.toDate()).toLocaleDateString() : 'Processing...'}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
+                        <span className={`font-bold uppercase tracking-widest text-[10px] ${res.status === 'completed' ? 'text-emerald-500' : 'text-orange-500'}`}>
+                          {res.status}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -66,8 +76,11 @@ const PatientDashboard: React.FC = () => {
               ))}
               
               {results.length === 0 && (
-                <div className="py-12 bg-gray-50 dark:bg-gray-900/30 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800 text-center">
-                   <p className="text-gray-400 dark:text-gray-600 font-medium italic">No results uploaded yet</p>
+                <div className="py-20 bg-gray-50 dark:bg-gray-900/30 rounded-[3rem] border-4 border-dotted border-gray-200 dark:border-gray-800 text-center">
+                    <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-sm">
+                       <FileText className="w-8 h-8 text-gray-300 dark:text-gray-700" />
+                    </div>
+                    <p className="text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest text-xs italic">Awaiting your first upload</p>
                 </div>
               )}
             </div>
@@ -79,27 +92,35 @@ const PatientDashboard: React.FC = () => {
         </div>
 
         <div className="space-y-10">
-           <section className="bg-gray-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600 blur-[60px] opacity-20" />
+           <section className="bg-gray-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl">
+              <div className="absolute -top-10 -right-10 w-48 h-48 bg-blue-600 blur-[80px] opacity-30 animate-pulse" />
               <div className="relative z-10">
-                <Activity className="w-8 h-8 text-blue-400 mb-6" />
-                <h3 className="text-2xl font-bold mb-4 tracking-tight">AI Wellness Insights</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                  Your vitamin D levels are slightly below optimal. We recommend 15 minutes of direct morning sunlight.
+                <div className="flex items-center gap-3 mb-8">
+                   <div className="p-3 bg-blue-600 rounded-2xl text-white">
+                      <Zap className="w-6 h-6 fill-current" />
+                   </div>
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Gen-AI Health</span>
+                </div>
+                <h3 className="text-2xl font-black mb-4 tracking-tighter leading-tight">Wellness Pulse</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-10 font-medium">
+                  {results.length > 0 
+                    ? "Based on your latest labs, we're tracking a positive trend in your lipid profile. Keep it up!"
+                    : "Upload your first lab result to unlock personalized AI wellness insights and proactive health alerts."
+                  }
                 </p>
-                <button className="w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-50 transition-colors">
-                   Read Full Plan
+                <button className="w-full py-5 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-[0.15em] hover:bg-blue-50 transition-all shadow-xl shadow-white/5 active:scale-95">
+                   View Full Analysis
                 </button>
               </div>
            </section>
 
-           <div className="p-8 bg-blue-50 dark:bg-blue-900/20 rounded-[2.5rem] border border-blue-100 dark:border-blue-800/30 transition-colors">
-              <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-4 px-2">Assigned Doctor</h4>
-              <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">DS</div>
+           <div className="p-10 bg-blue-50 dark:bg-blue-900/20 rounded-[3rem] border border-blue-100 dark:border-blue-800/30 transition-colors">
+              <h4 className="text-xs font-black text-blue-900 dark:text-blue-300 mb-6 uppercase tracking-widest px-2">Primary Physician</h4>
+              <div className="flex items-center gap-5 bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-sm border border-blue-100 dark:border-blue-900/30">
+                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">DS</div>
                 <div>
-                   <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Dr. Sarah Smith</div>
-                   <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">General Practitioner</div>
+                   <div className="text-base font-black text-gray-900 dark:text-gray-100">Dr. Sarah Smith</div>
+                   <div className="text-[10px] text-gray-500 dark:text-gray-500 font-bold uppercase tracking-widest mt-1">General Practitioner</div>
                 </div>
               </div>
            </div>
@@ -110,3 +131,4 @@ const PatientDashboard: React.FC = () => {
 };
 
 export default PatientDashboard;
+

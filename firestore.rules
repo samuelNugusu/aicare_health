@@ -46,6 +46,12 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId);
       }
+
+      // Metrics subcollection
+      match /metrics/{metricId} {
+        allow read: if isOwner(userId) || isDoctor() || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
     }
   }
 }

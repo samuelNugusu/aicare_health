@@ -65,6 +65,18 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "role", "content", "timestamp"]
+    },
+    "HealthMetric": {
+      "title": "Health Metric",
+      "description": "Biometric data point tracking (e.g. weight, blood pressure)",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["weight", "blood_pressure_sys", "blood_pressure_dia", "heart_rate", "glucose", "steps", "height", "bmi"] },
+        "value": { "type": "number" },
+        "unit": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "value", "unit", "timestamp"]
     }
   },
   "firestore": {
@@ -79,6 +91,10 @@
     "users/{userId}/messages/{messageId}": {
       "schema": "ChatMessage",
       "description": "Chat history with the AI assistant"
+    },
+    "users/{userId}/metrics/{metricId}": {
+      "schema": "HealthMetric",
+      "description": "Vitals and biometric logs"
     }
   }
 }
