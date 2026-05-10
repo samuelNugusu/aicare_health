@@ -51,6 +51,7 @@ Output format should be JSON:
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
   if (provider === 'gemini') {
     const ai = getGemini();
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
     const parts: any[] = [{ text: ANALYSIS_PROMPT }];
     if (input.text) parts.push({ text: `Lab Result Text: ${input.text}` });
     if (input.base64Image) {
@@ -60,12 +61,11 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
     
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: { parts },
-      config: { responseMimeType: "application/json" }
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts }],
+      generationConfig: { responseMimeType: "application/json" }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(result.response.text());
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
@@ -93,18 +93,18 @@ export async function getHealthAssistantResponse(
 ) {
   if (provider === 'gemini') {
     const ai = getGemini();
+    const model = ai.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
+    });
     
     const chatHistory = history.map(h => ({
       role: h.role === 'assistant' ? 'model' : h.role,
       parts: [{ text: h.content }]
     }));
 
-    const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
-      history: chatHistory,
-      config: {
-        systemInstruction: "You are AiCare Assistant, a professional health coach and medical information specialist. Be helpful, accurate, and always advise professional medical consultation for serious concerns."
-      }
+    const chat = model.startChat({
+      history: chatHistory
     });
 
     const parts: any[] = [{ text: message }];
@@ -115,8 +115,8 @@ export async function getHealthAssistantResponse(
       parts.push({ inlineData: { data: base64Data, mimeType } });
     }
     
-    const result = await chat.sendMessage({ message: parts });
-    return result.text;
+    const result = await chat.sendMessage(parts);
+    return result.response.text();
   } else {
     const openai = getOpenAI();
     const messages: any[] = [
