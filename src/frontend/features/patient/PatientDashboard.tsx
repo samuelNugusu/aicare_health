@@ -1,43 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, limit, doc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight, Zap } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck } from 'lucide-react';
 import LabUpload from '../lab/LabUpload';
 import HealthMetrics from './HealthMetrics';
 
-const PatientDashboard: React.FC = () => {
+interface PatientDashboardProps {
+  patientId?: string;
+}
+
+const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
   const { user } = useAuth();
+  const effectiveUserId = patientId || user?.uid;
+  const isViewingSelf = !patientId || patientId === user?.uid;
+  
   const [results, setResults] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [patientData, setPatientData] = useState<any>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!effectiveUserId) return;
+
+    // If viewing someone else, fetch their profile info
+    if (!isViewingSelf) {
+      const unsub = onSnapshot(doc(db, 'users', effectiveUserId), (snap) => {
+        setPatientData(snap.data());
+      });
+      return unsub;
+    }
+  }, [effectiveUserId, isViewingSelf]);
+
+  useEffect(() => {
+    if (!effectiveUserId) return;
     const q = query(
-      collection(db, `users/${user.uid}/lab_results`),
-      orderBy('uploadDate', 'desc')
+      collection(db, `users/${effectiveUserId}/lab_results`),
+      orderBy('uploadDate', 'desc'),
+      limit(5)
     );
     return onSnapshot(q, (snap) => {
       setResults(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-  }, [user]);
+  }, [effectiveUserId]);
+
+  useEffect(() => {
+    // Find all doctors in the system
+    const q = query(collection(db, 'users'), where('role', '==', 'doctor'), limit(3));
+    return onSnapshot(q, (snap) => {
+      setDoctors(snap.docs.map(doc => doc.data()));
+    });
+  }, []);
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-12 transition-colors duration-300">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Health Hub</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Welcome back, {user?.displayName?.split(' ')[0]}. Monitoring your vitals in real-time.</p>
+           <div className="flex items-center gap-3 mb-2">
+             <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+               {isViewingSelf ? 'Health Hub' : 'Patient Profile'}
+             </h1>
+             {!isViewingSelf && (
+               <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Read Only</span>
+             )}
+           </div>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            {isViewingSelf 
+              ? `Welcome back, ${user?.displayName?.split(' ')[0] || 'Member'}. Monitoring your vitals in real-time.`
+              : `Reviewing clinical data for ${patientData?.displayName || 'Anonymous Patient'}.`
+            }
+          </p>
         </div>
         <div className="flex gap-4">
            <div className="bg-emerald-50 dark:bg-emerald-900/20 px-6 py-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Active Monitoring</div>
+              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
+                {isViewingSelf ? 'Active Monitoring' : 'Live Stream'}
+              </div>
            </div>
         </div>
       </header>
 
       <section>
-        <HealthMetrics />
+        <HealthMetrics userId={effectiveUserId} readOnly={!isViewingSelf} />
       </section>
 
       <div className="grid lg:grid-cols-3 gap-12 pt-4">
@@ -80,15 +124,17 @@ const PatientDashboard: React.FC = () => {
                     <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-sm">
                        <FileText className="w-8 h-8 text-gray-300 dark:text-gray-700" />
                     </div>
-                    <p className="text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest text-xs italic">Awaiting your first upload</p>
+                    <p className="text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest text-xs italic">Awaiting clinical submissions</p>
                 </div>
               )}
             </div>
           </section>
 
-          <section>
-             <LabUpload />
-          </section>
+          {isViewingSelf && (
+            <section>
+               <LabUpload />
+            </section>
+          )}
         </div>
 
         <div className="space-y-10">
@@ -115,13 +161,27 @@ const PatientDashboard: React.FC = () => {
            </section>
 
            <div className="p-10 bg-blue-50 dark:bg-blue-900/20 rounded-[3rem] border border-blue-100 dark:border-blue-800/30 transition-colors">
-              <h4 className="text-xs font-black text-blue-900 dark:text-blue-300 mb-6 uppercase tracking-widest px-2">Primary Physician</h4>
-              <div className="flex items-center gap-5 bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-sm border border-blue-100 dark:border-blue-900/30">
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">DS</div>
-                <div>
-                   <div className="text-base font-black text-gray-900 dark:text-gray-100">Dr. Sarah Smith</div>
-                   <div className="text-[10px] text-gray-500 dark:text-gray-500 font-bold uppercase tracking-widest mt-1">General Practitioner</div>
-                </div>
+              <div className="flex items-center justify-between mb-8">
+                <h4 className="text-xs font-black text-blue-900 dark:text-blue-300 uppercase tracking-widest px-2">Medical Network</h4>
+                <UserCheck className="w-4 h-4 text-blue-400" />
+              </div>
+              
+              <div className="space-y-4">
+                {doctors.map((dr, i) => (
+                  <div key={i} className="flex items-center gap-5 bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-sm border border-blue-100 dark:border-blue-900/30 hover:scale-105 transition-transform cursor-pointer">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/20">
+                      {dr.displayName?.[0] || 'D'}
+                    </div>
+                    <div>
+                       <div className="text-base font-black text-gray-900 dark:text-gray-100 truncate max-w-[120px]">{dr.displayName || 'Unnamed Dr.'}</div>
+                       <div className="text-[10px] text-gray-500 dark:text-gray-500 font-bold uppercase tracking-widest mt-1">{dr.specialty || 'Health Specialist'}</div>
+                    </div>
+                  </div>
+                ))}
+                
+                {doctors.length === 0 && (
+                  <p className="text-center text-xs font-bold text-gray-400 py-4 italic">No doctors available yet</p>
+                )}
               </div>
            </div>
         </div>

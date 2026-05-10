@@ -64,8 +64,9 @@ const DashboardRouter = () => {
     );
   }
 
-  // Dashboard logic: forced Admin for demo
-  return <AdminDashboard />;
+  if (roleData.role === 'admin') return <AdminDashboard />;
+  if (roleData.role === 'doctor') return <DoctorDashboard />;
+  return <PatientDashboard />;
 };
 
 export default function App() {

@@ -38,7 +38,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setError('');
     try {
       if (mode === 'register') {
-        await registerWithEmail(email, password, name);
+        const userCredential = await registerWithEmail(email, password, name);
+        // role is handled by AuthProvider's auto-init logic but we can pass a preference or update it here
+        // For simplicity, let's just use the registration as is, 
+        // and allow role change in profile or by admin.
       } else {
         await loginWithEmail(email, password);
       }

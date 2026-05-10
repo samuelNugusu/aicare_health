@@ -48,13 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           // If profile missing, trigger an immediate sync
           console.log("Profile missing, auto-initializing...");
-          const role = 'admin';
+          // In a real app, the first user might be admin. For this app, let's default to client 
+          // unless specific criteria met. For now, let's use 'client' as default.
+          const defaultRole = 'client';
           setDoc(userRef, {
             uid: user.uid,
             email: user.email,
             displayName: user.displayName,
             photoURL: user.photoURL,
-            role: role,
+            role: defaultRole,
             createdAt: serverTimestamp(),
             lastLogin: serverTimestamp(),
             isVerified: true
