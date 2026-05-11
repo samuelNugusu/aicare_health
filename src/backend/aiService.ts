@@ -28,21 +28,26 @@ function getGemini() {
 }
 
 const ANALYSIS_PROMPT = `
-You are an expert AI Health Diagnostic Assistant. Your task is to analyze lab results from an image or text.
-Extract clinical markers, values, units, and reference ranges.
-Categorize each marker as normal, high, low, or critical.
-Provide a clear summary, health recommendations (lifestyle, diet, further tests), and potential predictive alerts.
-IMPORTANT: Always include a disclaimer that this is NOT a medical diagnosis and the user should consult a doctor.
+You are a Senior Clinical Diagnostic Specialist and Medical Data Scientist. Your task is to perform an exhaustive, deep analysis of medical lab results from provided images or text.
 
-Output format should be JSON:
+DEEP ANALYSIS REQUIREMENTS:
+1. Extract EVERY clinical marker with absolute precision (values, units, and reference ranges).
+2. For every marker outside the reference range, provide a detailed clinical explanation of what this might indicate (differential considerations).
+3. Synthesize the findings: Do not just list markers, but explain how they relate to each other (e.g., how elevated Glucose relates to HbA1c).
+4. Provide highly specific, actionable health optimizations including physiological mechanisms (e.g., explain WHY a certain nutrient is needed based on the labs).
+5. Identify long-term health trends or "Predictive Alerts" based on subtle variations in the data.
+
+Output format MUST be strictly valid JSON:
 {
-  "summary": "...",
+  "summary": "Full, deep clinical overview of the patient's current metabolic and physiological state...",
   "keyMetrics": [
-    {"marker": "Hemoglobin", "value": "12.5", "unit": "g/dL", "referenceRange": "13.5-17.5", "status": "low"}
+    {"marker": "...", "value": "...", "unit": "...", "referenceRange": "...", "status": "normal|high|low|critical", "insight": "Deep technical insight for this specific marker..."}
   ],
-  "recommendations": ["..."],
-  "predictiveAlerts": ["..."]
+  "recommendations": ["Detailed, scientifically-backed action steps..."],
+  "predictiveAlerts": ["Sophisticated risk assessment and long-term trend warnings..."]
 }
+
+DISCLAIMER: Always append a professional medical disclaimer stating that this is an AI-powered data synthesis and must be reviewed by a licensed physician.
 `;
 
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
@@ -63,7 +68,7 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
         contents: { parts },
         config: { 
           responseMimeType: "application/json",
-          systemInstruction: "CRITICAL: You are an expert AI Health/Medical Diagnostic Assistant. You ONLY analyze lab results and medical reports. If the provided data is NOT a medical lab result or health report (e.g. generic text, unrelated images), you MUST return a JSON response with a 'summary' that states: 'I am a specialized medical assistant. I can only analyze health-related reports and lab results. Please provide a relevant clinical document.' and set keyMetrics to an empty array."
+          systemInstruction: "CRITICAL: You are a World-Class AI Clinical Pathologist. You provide DEEP, rigorous, and technical medical analysis of laboratory results. You ONLY analyze health-related documents. If the input is non-medical, explain that your expertise is strictly clinical. Be thorough, use medical terminology correctly, and provide profound insights into the user's health state."
         }
       });
 
@@ -78,7 +83,7 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
     try {
       const openai = getOpenAI();
       const messages: any[] = [
-        { role: "system", content: "CRITICAL: You are an expert AI Health/Medical Diagnostic Assistant. You ONLY analyze lab results and medical reports. Strictly return JSON. If the data is not a medical report, your summary must politely state you only handle health-related records." },
+        { role: "system", content: "CRITICAL: You are an Elite AI Clinical Pathologist. Provide exhaustive, technical, and deep medical analysis of clinical reports. strictly return JSON. Use high-level medical reasoning to synthesize the data." },
         { role: "user", content: ANALYSIS_PROMPT }
       ];
       if (input.text) messages.push({ role: "user", content: `Lab Result Text: ${input.text}` });
@@ -100,8 +105,8 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       return JSON.parse(completion.choices[0].message.content || '{}');
     } catch (err: any) {
       console.warn("OpenAI Analysis Error:", err);
-      if (err.status === 401 || err.status === 429) {
-        console.log("GPT-4o unavailable or unauthorized, trying Gemini fallback...");
+      if (err.status === 401 || err.status === 404 || err.status === 429) {
+        console.log("GPT-4o unavailable, using Deep Gemini fallback...");
         return analyzeLabResult(input, 'gemini');
       }
       throw err;
@@ -115,6 +120,8 @@ export async function getHealthAssistantResponse(
   base64Image?: string,
   provider: AIProvider = 'gemini'
 ) {
+  const MEDICAL_SYSTEM_PROMPT = "CRITICAL: You are the AiCare Medical AI, an advanced Clinical Reasoning System. You provide DEEP, scientifically rigorous medical, wellness, and health-related responses. Your knowledge covers clinical pathology, nutrition, exercise science, and physiological optimizations. You MUST provide detailed, multi-layered medical answers. If the user asks non-medical queries, politely redirect them to your clinical specialization. You never provide shallow answers; you always provide deep health insights.";
+
   if (provider === 'gemini') {
     try {
       const ai = getGemini();
@@ -138,7 +145,7 @@ export async function getHealthAssistantResponse(
           { role: 'user', parts }
         ],
         config: {
-          systemInstruction: "CRITICAL: You are AiCare Medical Assistant. You ONLY respond to health, medical, wellness, and laboratory-related queries. If the user asks about anything non-medical (e.g., politics, celebrities, general chat, coding), you MUST politely refuse and say: 'I am your specialized health assistant. I can only provide information related to medical, wellness, and health topics.' Do NOT break character."
+          systemInstruction: MEDICAL_SYSTEM_PROMPT
         }
       });
       
@@ -151,7 +158,7 @@ export async function getHealthAssistantResponse(
     try {
       const openai = getOpenAI();
       const messages: any[] = [
-        { role: "system", content: "CRITICAL: You are AiCare Medical Assistant. You ONLY respond to health, medical, wellness, and laboratory-related queries. If the user asks about anything non-medical, you MUST politely refuse and state your medical specialization." },
+        { role: "system", content: MEDICAL_SYSTEM_PROMPT },
         ...history.map(h => ({ role: h.role === 'model' ? 'assistant' : h.role, content: h.content })),
       ];
 
@@ -175,8 +182,8 @@ export async function getHealthAssistantResponse(
       return completion.choices[0].message.content;
     } catch (err: any) {
       console.warn("OpenAI Chat Error:", err);
-      if (err.status === 401 || err.status === 429) {
-        console.log("GPT-4o unavailable or unauthorized, trying Gemini fallback...");
+      if (err.status === 401 || err.status === 404 || err.status === 429) {
+        console.log("GPT-4o unavailable, using Deep Gemini fallback...");
         return getHealthAssistantResponse(history, message, base64Image, 'gemini');
       }
       throw err;

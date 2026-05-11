@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { collection, query, orderBy, onSnapshot, where, limit, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/utils';
 import LabUpload from '../lab/LabUpload';
 import HealthMetrics from './HealthMetrics';
 import AnalysisResults from '../lab/AnalysisResults';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface PatientDashboardProps {
   patientId?: string;
@@ -94,6 +95,12 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
     });
   }, []);
 
+  const chartData = [
+    { name: 'Verified', value: diagnosisStats.verified, color: '#10b981' },
+    { name: 'Pending', value: diagnosisStats.completed, color: '#3b82f6' },
+    { name: 'Failed', value: diagnosisStats.failed, color: '#ef4444' },
+  ];
+
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8 sm:space-y-12 transition-colors duration-300">
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-2">
@@ -123,18 +130,44 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-2">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 px-2">
         <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
-          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Clinical Revisions</div>
-          <div className="text-2xl font-black text-blue-600 italic tracking-tighter">{diagnosisStats.verified} Verified</div>
+          <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Clinical Verified</div>
+          <div className="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{diagnosisStats.verified} Records</div>
         </div>
         <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
-          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Processing Queue</div>
-          <div className="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{diagnosisStats.completed} Active</div>
+          <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Active Analysis</div>
+          <div className="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{diagnosisStats.completed} Processing</div>
         </div>
         <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
-          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">System Anomalies</div>
+          <div className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">System Failures</div>
           <div className="text-2xl font-black text-rose-500 italic tracking-tighter">{diagnosisStats.failed} Failed</div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Reports</div>
+          <div className="text-2xl font-black text-gray-900 dark:text-white italic tracking-tighter">{diagnosisStats.verified + diagnosisStats.completed + diagnosisStats.failed} Total</div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+        <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-8 flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-blue-500" />
+          Health Analytics Summary
+        </h3>
+        <div className="h-64 sm:h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#88888810" vertical={false} />
+              <XAxis dataKey="name" stroke="#88888880" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
+              <YAxis stroke="#88888880" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '1rem', fontSize: '10px' }} />
+              <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

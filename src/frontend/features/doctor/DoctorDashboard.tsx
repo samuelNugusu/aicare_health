@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { collection, query, onSnapshot, where, limit, orderBy, collectionGroup } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Search, Clipboard, Calendar, MessageSquare, ExternalLink, Activity, Users, AlertCircle, ChevronRight, HeartPulse } from 'lucide-react';
+import { Search, Clipboard, Calendar, MessageSquare, ExternalLink, Activity, Users, AlertCircle, ChevronRight, HeartPulse, BarChart3, PieChartIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
 import { cn } from '../../utils/utils';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const DoctorDashboard: React.FC = () => {
   const { user } = useAuth();
   const [patients, setPatients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [stats, setStats] = useState({ active: 0, performed: 0, verified: 0, helped: 0 });
+  const [stats, setStats] = useState({ active: 0, performed: 0, verified: 0, failed: 0, completed: 0, helped: 0 });
 
   useEffect(() => {
     const q = query(collection(db, 'users'), where('role', '==', 'client'), limit(20));
@@ -25,12 +26,17 @@ const DoctorDashboard: React.FC = () => {
     if (user?.uid) {
       const labQ = query(collectionGroup(db, 'lab_results'), where('performedBy', '==', user.uid));
       const unsubscribeLabs = onSnapshot(labQ, (snap) => {
-        const labs = snap.docs.map(d => ({ ...d.data(), userId: d.ref.parent.parent?.id }));
+        const labs = snap.docs.map(d => {
+          const data = d.data();
+          return { ...data, status: data.status, userId: d.ref.parent.parent?.id };
+        });
         const helpedIds = new Set(labs.map(l => l.userId).filter(Boolean));
         setStats(s => ({
           ...s,
           performed: labs.length,
-          verified: labs.filter(l => l.status === 'verified').length,
+          verified: labs.filter((l: any) => l.status === 'verified').length,
+          completed: labs.filter((l: any) => l.status === 'completed').length,
+          failed: labs.filter((l: any) => l.status === 'failed' || l.status === 'error').length,
           helped: helpedIds.size
         }));
       }, (error) => {
@@ -44,6 +50,19 @@ const DoctorDashboard: React.FC = () => {
 
     return () => unsubscribePatients();
   }, [user?.uid]);
+
+  const chartData = [
+    { name: 'Verified', value: stats.verified },
+    { name: 'Queue', value: stats.completed },
+    { name: 'Anomalies', value: stats.failed },
+  ];
+
+  const distributionData = [
+    { name: 'Completed', value: stats.performed - stats.failed },
+    { name: 'Errors', value: stats.failed },
+  ];
+
+  const COLORS = ['#3b82f6', '#8b5cf6', '#ef4444', '#10b981'];
 
   const filteredPatients = patients.filter(p => 
     p.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -87,11 +106,64 @@ const DoctorDashboard: React.FC = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
-          <DocStat icon={<Users className="w-6 h-6" />} label="Patient Load" value={stats.active.toString()} color="blue" />
-          <DocStat icon={<Clipboard className="w-6 h-6" />} label="Diagnoses Performed" value={stats.performed.toString()} color="orange" />
-          <DocStat icon={<Activity className="w-6 h-6" />} label="Verified Diags" value={stats.verified.toString()} color="emerald" />
-          <DocStat icon={<HeartPulse className="w-6 h-6" />} label="Patients Helped" value={stats.helped.toString()} color="purple" />
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-12 sm:mb-16">
+          <DocStat icon={<Users className="w-5 h-5" />} label="Patient Load" value={stats.active.toString()} color="blue" />
+          <DocStat icon={<Activity className="w-5 h-5" />} label="Verified" value={stats.verified.toString()} color="emerald" />
+          <DocStat icon={<Clipboard className="w-5 h-5" />} label="Active Queue" value={stats.completed.toString()} color="blue" />
+          <DocStat icon={<AlertCircle className="w-5 h-5" />} label="Failed" value={stats.failed.toString()} color="orange" />
+          <DocStat icon={<Clipboard className="w-5 h-5" />} label="Total Diags" value={stats.performed.toString()} color="purple" />
+          <DocStat icon={<HeartPulse className="w-5 h-5" />} label="Helped" value={stats.helped.toString()} color="emerald" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+           <div className="bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+             <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-8 flex items-center gap-2">
+               <BarChart3 className="w-4 h-4 text-blue-500" />
+               Performance Metrics
+             </h3>
+             <div className="h-64">
+               <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={chartData}>
+                   <CartesianGrid strokeDasharray="3 3" stroke="#88888820" vertical={false} />
+                   <XAxis dataKey="name" stroke="#88888880" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
+                   <YAxis stroke="#88888880" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '1rem', fontSize: '10px' }}
+                   />
+                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                     {chartData.map((entry, index) => (
+                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                     ))}
+                   </Bar>
+                 </BarChart>
+               </ResponsiveContainer>
+             </div>
+           </div>
+
+           <div className="bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+             <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-8 flex items-center gap-2">
+               <PieChartIcon className="w-4 h-4 text-purple-500" />
+               Success Rate Distribution
+             </h3>
+             <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={distributionData}
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {distributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '1rem', fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+             </div>
+           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">
