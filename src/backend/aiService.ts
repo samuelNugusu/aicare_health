@@ -64,7 +64,7 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       }
       
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: { parts },
         config: { 
           responseMimeType: "application/json",
@@ -139,7 +139,7 @@ export async function getHealthAssistantResponse(
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: [
           ...chatHistory,
           { role: 'user', parts }

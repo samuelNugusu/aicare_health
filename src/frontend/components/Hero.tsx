@@ -81,59 +81,57 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative mt-4 lg:mt-0"
           >
-            <div className="relative z-10 bg-white dark:bg-gray-900 p-5 sm:p-7 rounded-2xl sm:rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800 transition-colors">
-              <div className="flex items-center justify-between mb-6 sm:mb-8">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
-                     <HeartPulse className="text-blue-600 dark:text-blue-400 w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="relative z-10 bg-white dark:bg-gray-900 p-5 sm:p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 transition-colors">
+              <div className="flex items-center justify-between gap-3 mb-5 sm:mb-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-3 min-w-0">
+                   <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                     <HeartPulse className="text-blue-600 dark:text-blue-400 w-5 h-5" />
                    </div>
-                   <div>
-                     <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100">Health Overview</h3>
-                     <p className="text-[10px] sm:text-xs text-gray-500">Live monitoring enabled</p>
+                   <div className="min-w-0">
+                     <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate">Health Overview</h3>
+                     <div className="flex items-center gap-1.5 mt-0.5">
+                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                       <p className="text-[10px] sm:text-xs text-gray-500 truncate">Live monitoring enabled</p>
+                     </div>
                    </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">98%</span>
-                  <p className="text-[9px] sm:text-[10px] uppercase font-bold text-green-500">Wellness Score</p>
+
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  <div className="hidden xs:flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/30 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                    <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                    <span>Low Risk</span>
+                  </div>
+                  <div className="text-right pl-2 sm:border-l sm:border-gray-100 sm:dark:border-gray-800">
+                    <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">98%</span>
+                    <p className="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-500 leading-none">Wellness Score</p>
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3">
                 {[
                   { label: "Hemoglobin", value: "14.2", unit: "g/dL", status: "Optimal" },
                   { label: "Cholesterol", value: "185", unit: "mg/dL", status: "Healthy" },
                   { label: "Blood Sugar", value: "92", unit: "mg/dL", status: "Normal" }
                 ].map((item, i) => (
-                  <div key={i} className="bg-gray-50 dark:bg-gray-800/50 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between transition-colors">
+                  <div key={i} className="bg-gray-50 dark:bg-gray-800/50 p-3 sm:p-3.5 rounded-xl flex items-center justify-between transition-colors">
                     <div>
                       <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium">{item.label}</span>
                       <p className="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100">{item.value} <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">{item.unit}</span></p>
                     </div>
-                    <span className="text-[9px] sm:text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-md font-bold uppercase">{item.status}</span>
+                    <span className="text-[9px] sm:text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-md font-bold uppercase">{item.status}</span>
                   </div>
                 ))}
               </div>
               
-              <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1.5">
-                   <ShieldCheck className="w-4 h-4" />
-                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">AI Verified Diagnosis</span>
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
+                   <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                   <span className="text-xs font-semibold uppercase tracking-wider">AI Verified Diagnosis</span>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 italic">"Results indicate optimal metabolic health. Maintain current diet."</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 italic">"Results indicate optimal metabolic health. Maintain current diet."</p>
               </div>
             </div>
-            
-            {/* Floating element bounded */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="hidden sm:flex absolute -top-3 -right-2 sm:-top-4 sm:-right-3 z-20 bg-white dark:bg-gray-800 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 items-center gap-2.5"
-            >
-              <div className="w-7 h-7 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
-                <Zap className="text-orange-600 dark:text-orange-400 w-3.5 h-3.5" />
-              </div>
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Low Risk Profile</span>
-            </motion.div>
           </motion.div>
         </div>
       </div>

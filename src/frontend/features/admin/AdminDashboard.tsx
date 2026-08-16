@@ -3,10 +3,12 @@ import { useAuth } from '../../firebase/AuthProvider';
 import { 
   Users, Shield, Settings, Activity, LayoutGrid, HeartPulse, 
   MoreHorizontal, UserPlus, Trash2, X, BarChart3, PieChart as PieChartIcon, 
-  AlertCircle, ShieldCheck, ChevronRight, Search, TrendingUp, CheckCircle2 
+  AlertCircle, ShieldCheck, ChevronRight, Search, TrendingUp, CheckCircle2,
+  Stethoscope, Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
+import DoctorDashboard from '../doctor/DoctorDashboard';
 import { cn } from '../../utils/utils';
 import { db } from '../../firebase/firebase';
 import { 
@@ -28,13 +30,13 @@ interface UserData {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
-  const [view, setView] = useState<'admin' | 'patient'>('admin');
+  const { user, setActiveRole } = useAuth();
+  const [view, setView] = useState<'admin' | 'doctor' | 'patient'>('admin');
   const [users, setUsers] = useState<UserData[]>([]);
-  const [stats, setStats] = useState({ total: 0, doctors: 0, clients: 0 });
+  const [stats, setStats] = useState({ total: 0, doctors: 0, clients: 0, admins: 0 });
   const [diagnosisStats, setDiagnosisStats] = useState({ completed: 0, verified: 0, failed: 0, total: 0 });
   const [showProvisionModal, setShowProvisionModal] = useState(false);
-  const [newUser, setNewUser] = useState({ email: '', name: '', role: 'client' as 'doctor' | 'client' });
+  const [newUser, setNewUser] = useState({ email: '', name: '', role: 'client' as 'doctor' | 'client' | 'admin' });
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -45,10 +47,11 @@ const AdminDashboard: React.FC = () => {
       
       const counts = userList.reduce((acc, u) => {
         if (u.role === 'doctor') acc.doctors++;
-        else if (u.role === 'client') acc.clients++;
+        else if (u.role === 'admin') acc.admins++;
+        else acc.clients++;
         acc.total++;
         return acc;
-      }, { total: 0, doctors: 0, clients: 0 });
+      }, { total: 0, doctors: 0, clients: 0, admins: 0 });
       setStats(counts);
     }, (error) => {
       console.error("Admin Users Fetch Error:", error);
@@ -117,13 +120,14 @@ const AdminDashboard: React.FC = () => {
 
   const chartData = [
     { name: 'Verified', value: diagnosisStats.verified, color: '#10B981' },
-    { name: 'Pending', value: diagnosisStats.completed, color: '#3B82F6' },
-    { name: 'Failed', value: diagnosisStats.failed, color: '#F43F5E' },
+    { name: 'Pending Review', value: diagnosisStats.completed, color: '#3B82F6' },
+    { name: 'Errors/Failed', value: diagnosisStats.failed, color: '#F43F5E' },
   ];
 
   const pieData = [
     { name: 'Patients', value: stats.clients, color: '#3B82F6' },
     { name: 'Doctors', value: stats.doctors, color: '#10B981' },
+    { name: 'Admins', value: stats.admins, color: '#F59E0B' },
   ];
 
   return (
@@ -136,38 +140,86 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-2 text-blue-500 font-semibold tracking-wider text-xs uppercase mb-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              Core Infrastructure Management
+            <div className="flex items-center gap-2 text-amber-400 font-semibold tracking-wider text-[11px] sm:text-xs uppercase mb-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Role Classification: System Administrator (Global Governance)
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Control <span className="text-blue-500">Terminal</span>
+              Platform <span className="text-blue-500">Administration & Governance</span>
             </h1>
+            <p className="text-xs text-gray-400 mt-1">
+              Logged in as Master Administrator: <span className="font-mono text-gray-300">{user?.email}</span>
+            </p>
           </div>
 
-          <nav className="flex items-center self-start sm:self-auto gap-1.5 p-1 bg-white/5 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-white/10 w-full sm:w-auto">
-            <button 
-              onClick={() => setView('admin')}
-              className={cn(
-                "flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-semibold uppercase tracking-wider transition-all",
-                view === 'admin' ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "text-gray-400 hover:text-white"
-              )}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              Intelligence
-            </button>
-            <button 
-              onClick={() => setView('patient')}
-              className={cn(
-                "flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-semibold uppercase tracking-wider transition-all",
-                view === 'patient' ? "bg-rose-600 text-white shadow-md shadow-rose-600/20" : "text-gray-400 hover:text-white"
-              )}
-            >
-              <HeartPulse className="w-3.5 h-3.5" />
-              Simulate View
-            </button>
+          {/* Fully Responsive Role Selection Bar */}
+          <nav 
+            aria-label="Role perspective switcher"
+            className="w-full lg:w-auto p-1 sm:p-1.5 bg-white/5 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-white/10 shadow-lg shadow-black/40"
+          >
+            <div className="grid grid-cols-3 gap-1 sm:gap-1.5 lg:flex lg:items-center">
+              <button 
+                id="role-btn-admin"
+                onClick={() => setView('admin')}
+                className={cn(
+                  "relative flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 lg:px-5 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 whitespace-nowrap active:scale-95",
+                  view === 'admin' 
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 border border-blue-400/30" 
+                    : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                )}
+              >
+                <LayoutGrid className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  <span className="inline sm:hidden">Admin</span>
+                  <span className="hidden sm:inline">Admin Mode</span>
+                </span>
+                {view === 'admin' && (
+                  <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-white ml-0.5 animate-pulse" />
+                )}
+              </button>
+
+              <button 
+                id="role-btn-doctor"
+                onClick={() => setView('doctor')}
+                className={cn(
+                  "relative flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 lg:px-5 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 whitespace-nowrap active:scale-95",
+                  view === 'doctor' 
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 border border-emerald-400/30" 
+                    : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                )}
+              >
+                <Stethoscope className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  <span className="inline sm:hidden">Doctor</span>
+                  <span className="hidden sm:inline">Doctor Mode</span>
+                </span>
+                {view === 'doctor' && (
+                  <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-white ml-0.5 animate-pulse" />
+                )}
+              </button>
+
+              <button 
+                id="role-btn-patient"
+                onClick={() => setView('patient')}
+                className={cn(
+                  "relative flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 lg:px-5 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 whitespace-nowrap active:scale-95",
+                  view === 'patient' 
+                    ? "bg-rose-600 text-white shadow-lg shadow-rose-600/30 border border-rose-400/30" 
+                    : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                )}
+              >
+                <HeartPulse className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  <span className="inline sm:hidden">Patient</span>
+                  <span className="hidden sm:inline">Patient Mode</span>
+                </span>
+                {view === 'patient' && (
+                  <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-white ml-0.5 animate-pulse" />
+                )}
+              </button>
+            </div>
           </nav>
         </header>
 
@@ -182,9 +234,9 @@ const AdminDashboard: React.FC = () => {
             >
               {/* Real-time Stat Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <StatCard icon={<Users />} label="Nodes" value={stats.total.toString()} sub="Global Registry" color="blue" />
-                <StatCard icon={<Shield />} label="Clinical" value={stats.doctors.toString()} sub="Verified Medics" color="emerald" />
-                <StatCard icon={<Activity />} label="Diagnostics" value={diagnosisStats.total.toString()} sub="Total Events" color="purple" />
+                <StatCard icon={<Users />} label="Total Accounts" value={stats.total.toString()} sub="Global Registry" color="blue" />
+                <StatCard icon={<Shield />} label="Clinical Doctors" value={stats.doctors.toString()} sub="Verified Medics" color="emerald" />
+                <StatCard icon={<Activity />} label="Diagnostics" value={diagnosisStats.total.toString()} sub="Total Lab Events" color="purple" />
                 <StatCard icon={<TrendingUp />} label="Efficacy" value={`${Math.round((diagnosisStats.verified / (diagnosisStats.total || 1)) * 100)}%`} sub="Verified Rate" color="blue" />
               </div>
 
@@ -194,7 +246,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="flex items-center justify-between mb-4 sm:mb-6">
                     <h3 className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
                       <BarChart3 className="w-4 h-4 text-blue-500" />
-                      Diagnostics Activity
+                      Diagnostic Review Distribution
                     </h3>
                     <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -223,7 +275,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl">
                   <h3 className="text-sm sm:text-base font-bold tracking-tight mb-4 flex items-center gap-2">
                     <PieChartIcon className="w-4 h-4 text-purple-400" />
-                    Registry Breakdown
+                    Role Distribution
                   </h3>
                   <div className="h-44 sm:h-52 w-full relative">
                     <ResponsiveContainer width="100%" height="100%">
@@ -246,7 +298,7 @@ const AdminDashboard: React.FC = () => {
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
                       <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Total Nodes</div>
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Total Accounts</div>
                     </div>
                   </div>
                   <div className="space-y-1.5 mt-3">
@@ -267,8 +319,8 @@ const AdminDashboard: React.FC = () => {
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
                 <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold tracking-tight">Entity Registry</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Control access tiers and permissions.</p>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight">User Role Governance Directory</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Control real-world access classifications: Patient, Doctor / MD, or Administrator.</p>
                   </div>
                   
                   <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
@@ -276,7 +328,7 @@ const AdminDashboard: React.FC = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
                       <input 
                         type="text"
-                        placeholder="Scan directory..."
+                        placeholder="Filter directory..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs font-medium focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-gray-500"
@@ -288,7 +340,7 @@ const AdminDashboard: React.FC = () => {
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold text-xs uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md active:scale-95 flex-shrink-0"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
-                      Provision Node
+                      Provision Account
                     </button>
                   </div>
                 </div>
@@ -298,9 +350,9 @@ const AdminDashboard: React.FC = () => {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-white/5 text-xs font-semibold uppercase tracking-wider text-gray-400 bg-white/[0.01]">
-                        <th className="px-5 py-3.5">Identity Profile</th>
-                        <th className="px-5 py-3.5">Access Classification</th>
-                        <th className="px-5 py-3.5">Internal ID</th>
+                        <th className="px-5 py-3.5">User Identity Profile</th>
+                        <th className="px-5 py-3.5">Role Classification</th>
+                        <th className="px-5 py-3.5">Account ID</th>
                         <th className="px-5 py-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -317,7 +369,7 @@ const AdminDashboard: React.FC = () => {
                               </div>
                               <div className="min-w-0">
                                 <div className="text-xs sm:text-sm font-semibold truncate max-w-[200px]">
-                                  {u.displayName || u.name || 'External Node'}
+                                  {u.displayName || u.name || 'External User'}
                                 </div>
                                 <div className="text-xs font-mono text-gray-500 truncate max-w-[200px]">{u.email}</div>
                               </div>
@@ -329,14 +381,14 @@ const AdminDashboard: React.FC = () => {
                               onChange={(e) => handleUpdateRole(u.id, e.target.value)}
                               className={cn(
                                 "appearance-none bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer outline-none hover:border-blue-500/50 transition-all",
-                                u.role === 'admin' ? "text-amber-400" :
-                                u.role === 'doctor' ? "text-emerald-400" :
-                                "text-blue-400"
+                                u.role === 'admin' ? "text-amber-400 border-amber-400/30" :
+                                u.role === 'doctor' ? "text-emerald-400 border-emerald-400/30" :
+                                "text-blue-400 border-blue-400/30"
                               )}
                             >
-                              <option value="client" className="bg-[#0a0a0a]">Patient Node</option>
-                              <option value="doctor" className="bg-[#0a0a0a]">Clinical Staff</option>
-                              <option value="admin" className="bg-[#0a0a0a]">Global Admin</option>
+                              <option value="client" className="bg-[#0a0a0a]">Patient (Biometrics & Labs)</option>
+                              <option value="doctor" className="bg-[#0a0a0a]">Doctor / MD (Certifier)</option>
+                              <option value="admin" className="bg-[#0a0a0a]">System Admin (Global)</option>
                             </select>
                           </td>
                           <td className="px-5 py-3.5 font-mono text-xs text-gray-500 truncate max-w-[120px]">{u.id}</td>
@@ -344,7 +396,7 @@ const AdminDashboard: React.FC = () => {
                             <button 
                               onClick={() => handleDeleteUser(u.id)}
                               className="p-2 hover:bg-rose-500/10 text-gray-500 hover:text-rose-400 rounded-lg transition-all"
-                              title="Terminate Entry"
+                              title="Delete Record"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -366,7 +418,7 @@ const AdminDashboard: React.FC = () => {
                           </div>
                           <div className="min-w-0">
                             <div className="text-xs font-semibold truncate">
-                              {u.displayName || u.name || 'External Node'}
+                              {u.displayName || u.name || 'External User'}
                             </div>
                             <div className="text-[10px] font-mono text-gray-500 truncate">{u.email}</div>
                           </div>
@@ -381,7 +433,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between gap-2 pt-0.5">
-                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">Tier</span>
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">Role</span>
                         <select 
                           value={u.role || 'client'}
                           onChange={(e) => handleUpdateRole(u.id, e.target.value)}
@@ -397,10 +449,26 @@ const AdminDashboard: React.FC = () => {
 
                   {filteredUsers.length === 0 && (
                     <div className="p-8 text-center text-xs text-gray-500">
-                      No entities found
+                      No accounts found
                     </div>
                   )}
                 </div>
+              </div>
+            </motion.div>
+          ) : view === 'doctor' ? (
+            <motion.div
+              key="doctor-simulation"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="space-y-3"
+            >
+              <div className="flex items-center gap-2 text-emerald-400 font-semibold uppercase tracking-wider text-xs px-1">
+                <Stethoscope className="w-4 h-4" />
+                Admin Simulation: Attending Physician Terminal
+              </div>
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-gray-900">
+                <DoctorDashboard />
               </div>
             </motion.div>
           ) : (
@@ -413,9 +481,9 @@ const AdminDashboard: React.FC = () => {
             >
               <div className="flex items-center gap-2 text-rose-500 font-semibold uppercase tracking-wider text-xs px-1">
                 <AlertCircle className="w-4 h-4" />
-                Simulating Patient Perspective
+                Admin Simulation: Patient Health Hub
               </div>
-              <div className="bg-[#080808] rounded-2xl border border-white/10 overflow-hidden">
+              <div className="bg-white dark:bg-gray-950 rounded-2xl border border-white/10 overflow-hidden">
                 <PatientDashboard />
               </div>
             </motion.div>
@@ -448,8 +516,8 @@ const AdminDashboard: React.FC = () => {
               </button>
 
               <div className="mb-5 sm:mb-6">
-                <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1">Provision <span className="text-blue-500">Node</span></h3>
-                <p className="text-gray-400 text-xs">Register entity to internal directory</p>
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1">Provision <span className="text-blue-500">Account</span></h3>
+                <p className="text-gray-400 text-xs">Create and classify new real-world account</p>
               </div>
 
               <form onSubmit={handleProvision} className="space-y-4">
@@ -474,24 +542,33 @@ const AdminDashboard: React.FC = () => {
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-400 ml-1">Access Hierarchy</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['client', 'doctor'] as const).map((role) => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => setNewUser({...newUser, role})}
-                        className={cn(
-                          "py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all",
-                          newUser.role === role 
-                            ? "bg-blue-600 border-blue-500 text-white shadow-md" 
-                            : "bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30"
-                        )}
-                      >
-                        {role === 'doctor' ? 'Clinical Staff' : 'Patient Node'}
-                      </button>
-                    ))}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-400 ml-1">Account Classification Tier</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { id: 'client', label: 'Patient', icon: HeartPulse, color: 'hover:border-blue-500/40 text-blue-400' },
+                      { id: 'doctor', label: 'Doctor', icon: Stethoscope, color: 'hover:border-emerald-500/40 text-emerald-400' },
+                      { id: 'admin', label: 'Admin', icon: ShieldCheck, color: 'hover:border-amber-500/40 text-amber-400' }
+                    ] as const).map((r) => {
+                      const Icon = r.icon;
+                      const isSelected = newUser.role === r.id;
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => setNewUser({...newUser, role: r.id as any})}
+                          className={cn(
+                            "py-2.5 px-2 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-1.5 min-h-[44px]",
+                            isSelected 
+                              ? "bg-blue-600 border-blue-400 text-white shadow-md shadow-blue-600/20" 
+                              : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                          )}
+                        >
+                          <Icon className={cn("w-3.5 h-3.5", isSelected ? "text-white" : r.color)} />
+                          <span className="truncate">{r.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -500,7 +577,7 @@ const AdminDashboard: React.FC = () => {
                     type="submit"
                     className="w-full py-3 bg-white text-black rounded-xl font-semibold text-xs sm:text-sm uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
                   >
-                    Commit Node Entry
+                    Commit Account Creation
                     <UserPlus className="w-4 h-4" />
                   </button>
                 </div>

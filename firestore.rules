@@ -31,8 +31,8 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin() || isDoctor();
       allow list: if isAdmin() || isDoctor();
       allow create: if isOwner(userId) 
-        && (request.resource.data.role == 'client' || request.resource.data.role == 'admin'); // OPEN ADMIN FOR DEMO
-      allow update: if (isOwner(userId)) || isAdmin();
+        && (request.resource.data.role == 'client' || request.resource.data.role == 'doctor' || request.resource.data.role == 'admin');
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
       
       // Lab Results subcollection

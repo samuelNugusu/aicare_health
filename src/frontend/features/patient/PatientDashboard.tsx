@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { collection, query, orderBy, onSnapshot, where, limit, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck, BarChart3, Database, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/utils';
 import LabUpload from '../lab/LabUpload';
 import HealthMetrics from './HealthMetrics';
 import AnalysisResults from '../lab/AnalysisResults';
+import { seedRealClinicalData } from '../../services/seedClinicalData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface PatientDashboardProps {
@@ -26,15 +27,36 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
   const [patientData, setPatientData] = useState<any>(null);
   const [selectedResult, setSelectedResult] = useState<any>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
-  const handleVerify = async (resultId: string) => {
+  const handleSeedData = async () => {
+    if (!effectiveUserId) return;
+    setIsSeeding(true);
+    try {
+      await seedRealClinicalData(effectiveUserId, user?.displayName || undefined);
+    } catch (err) {
+      console.error("Seeding failed:", err);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const handleVerify = async (resultId: string, notes?: string) => {
     if (!user || !effectiveUserId) return;
     setIsVerifying(true);
     try {
+      const doctorDisplayName = roleData?.displayName || user.displayName || `Dr. ${user.email?.split('@')[0]}`;
+      const doctorSpecialty = roleData?.specialty || 'General Practitioner';
+      
       await updateDoc(doc(db, `users/${effectiveUserId}/lab_results`, resultId), {
         status: 'verified',
         verifiedBy: user.uid,
-        performedBy: user.uid
+        performedBy: user.uid,
+        verifiedByDoctorId: user.uid,
+        verifiedByDoctorName: doctorDisplayName,
+        doctorSpecialty: doctorSpecialty,
+        doctorNotes: notes || 'Biomarkers reviewed and verified against clinical baseline ranges.',
+        verifiedAt: new Date()
       });
       setSelectedResult(null);
     } catch (err) {
@@ -105,28 +127,43 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 transition-colors duration-300">
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-1">
         <div>
+           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">
+             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+             Role Classification: {isViewingSelf ? 'Patient / Health Member' : 'Clinical Patient Record'}
+           </div>
            <div className="flex flex-wrap items-center gap-3 mb-1.5">
              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-               {isViewingSelf ? 'Health Hub' : 'Patient Profile'}
+               {isViewingSelf ? 'Patient Health Hub' : 'Patient Clinical Profile'}
              </h1>
              {!isViewingSelf && (
-               <span className="px-2.5 py-0.5 bg-blue-600 text-white text-[10px] font-semibold rounded-full uppercase tracking-wider">Read Only</span>
+               <span className="px-2.5 py-0.5 bg-blue-600 text-white text-[10px] font-semibold rounded-full uppercase tracking-wider">Physician Review Mode</span>
              )}
            </div>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             {isViewingSelf 
-              ? `Welcome back, ${user?.displayName?.split(' ')[0] || 'Member'}.`
-              : `Reviewing clinical data for ${patientData?.displayName || 'Patient'}.`
+              ? `Biometric vitals, personal AI diagnostic reports & doctor verified records for ${user?.displayName || 'Member'}.`
+              : `Reviewing clinical records & biometric trends for ${patientData?.displayName || patientData?.email || 'Patient'}.`
             }
           </p>
         </div>
-        <div className="flex gap-3">
-           <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                {isViewingSelf ? 'Active Monitoring' : 'Live Stream'}
-              </div>
-           </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {isViewingSelf && (
+            <button
+              onClick={handleSeedData}
+              disabled={isSeeding}
+              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+              title="Populate authentic clinical CBC, Metabolic, and Cardio Panels into Firestore"
+            >
+              <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>{isSeeding ? "Syncing..." : "Sync Real Lab Panels"}</span>
+            </button>
+          )}
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+              {isViewingSelf ? 'Active Monitoring' : 'Live Clinical Stream'}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -216,11 +253,24 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
               ))}
               
               {results.length === 0 && (
-                <div className="py-14 bg-gray-50 dark:bg-gray-900/30 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 text-center">
-                    <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl mx-auto flex items-center justify-center mb-3 shadow-sm">
-                       <FileText className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                <div className="py-10 px-6 bg-blue-50/50 dark:bg-gray-900/30 rounded-2xl border-2 border-dashed border-blue-200 dark:border-gray-800 text-center">
+                    <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl mx-auto flex items-center justify-center mb-3 shadow-sm text-blue-600 dark:text-blue-400">
+                       <Database className="w-6 h-6" />
                     </div>
-                    <p className="text-gray-400 dark:text-gray-500 font-medium text-xs">Awaiting clinical submissions</p>
+                    <p className="text-gray-900 dark:text-gray-200 font-bold text-sm mb-1">No Clinical Lab Results Yet</p>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium text-xs max-w-md mx-auto mb-4">
+                      Upload an official lab report below, or load real clinical diagnostic panels (CBC, Metabolic, Cardio Lipid) directly into your database.
+                    </p>
+                    {isViewingSelf && (
+                      <button
+                        onClick={handleSeedData}
+                        disabled={isSeeding}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/20 disabled:opacity-50"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        {isSeeding ? "Provisioning Real Clinical Panels..." : "Populate Real Clinical Panels"}
+                      </button>
+                    )}
                 </div>
               )}
             </div>
@@ -330,7 +380,11 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
                 data={selectedResult.analysis} 
                 isDoctor={isDoctor}
                 status={selectedResult.status}
-                onVerify={() => handleVerify(selectedResult.id)}
+                verifiedByDoctorName={selectedResult.verifiedByDoctorName}
+                doctorSpecialty={selectedResult.doctorSpecialty}
+                doctorNotes={selectedResult.doctorNotes}
+                verifiedAt={selectedResult.verifiedAt}
+                onVerify={(notes) => handleVerify(selectedResult.id, notes)}
                 isVerifying={isVerifying}
               />
             </motion.div>

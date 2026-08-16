@@ -12,7 +12,7 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './errorHandlers';
 
-async function syncUserRecord(user: any) {
+async function syncUserRecord(user: any, preferredRole?: 'client' | 'doctor', specialty?: string) {
   const userRef = doc(db, 'users', user.uid);
   let userDoc;
   try {
@@ -21,27 +21,35 @@ async function syncUserRecord(user: any) {
     handleFirestoreError(err, OperationType.GET, `users/${user.uid}`);
   }
   
-  // FOR DEMO PURPOSES: any user is an admin
-  const role = 'admin';
-  const isVerified = true;
+  // Real world role resolution:
+  // 1. If admin email (sami478779@gmail.com), assign 'admin'
+  // 2. If new user, assign preferredRole (or default 'client' / Patient)
+  // 3. If existing user, PRESERVE their role and update lastLogin
+  const isOwnerAdmin = user.email === 'sami478779@gmail.com';
   
   try {
     if (!userDoc?.exists()) {
+      const assignedRole = isOwnerAdmin ? 'admin' : (preferredRole || 'client');
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        role: role,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Member',
+        photoURL: user.photoURL || null,
+        role: assignedRole,
+        specialty: assignedRole === 'doctor' ? (specialty || 'General Practitioner') : undefined,
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
-        isVerified: isVerified
+        isVerified: true
       });
     } else {
+      const existingData = userDoc.data();
+      const resolvedRole = isOwnerAdmin && !existingData.role ? 'admin' : (existingData.role || 'client');
       await setDoc(userRef, { 
         lastLogin: serverTimestamp(),
-        role: role, // Force admin for demo
-        isVerified: isVerified
+        role: resolvedRole,
+        displayName: user.displayName || existingData.displayName || user.email?.split('@')[0],
+        photoURL: user.photoURL || existingData.photoURL || null,
+        isVerified: existingData.isVerified !== undefined ? existingData.isVerified : true
       }, { merge: true });
     }
   } catch (err) {
@@ -63,11 +71,11 @@ export const signInWithGoogle = async () => {
   }
 };
 
-export const registerWithEmail = async (email: string, pass: string, name: string) => {
+export const registerWithEmail = async (email: string, pass: string, name: string, preferredRole?: 'client' | 'doctor', specialty?: string) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(res.user, { displayName: name });
-    await syncUserRecord(res.user);
+    await syncUserRecord(res.user, preferredRole, specialty);
     return res.user;
   } catch (error) {
     console.error("Register Error:", error);

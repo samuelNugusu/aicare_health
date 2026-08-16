@@ -8,19 +8,30 @@ interface UserRoleData {
   role?: 'client' | 'doctor' | 'admin';
   isVerified?: boolean;
   specialty?: string;
+  displayName?: string;
+  email?: string;
 }
 
 interface AuthContextType {
   user: FirebaseUser | null;
   roleData: UserRoleData | null;
+  activeRole: 'client' | 'doctor' | 'admin';
+  setActiveRole: (role: 'client' | 'doctor' | 'admin') => void;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, roleData: null, loading: true });
+const AuthContext = createContext<AuthContextType>({
+  user: null, 
+  roleData: null, 
+  activeRole: 'client', 
+  setActiveRole: () => {}, 
+  loading: true 
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [roleData, setRoleData] = useState<UserRoleData | null>(null);
+  const [activeRoleOverride, setActiveRoleOverride] = useState<'client' | 'doctor' | 'admin' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(u);
       if (!u) {
         setRoleData(null);
+        setActiveRoleOverride(null);
         setLoading(false);
       }
     });
@@ -43,18 +55,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userRef, 
       (docSnap) => {
         if (docSnap.exists()) {
-          setRoleData(docSnap.data() as UserRoleData);
+          const data = docSnap.data() as UserRoleData;
+          setRoleData(data);
           setLoading(false);
         } else {
-          // If profile missing, trigger an immediate sync
-          console.log("Profile missing, auto-initializing...");
-          // In a real app, the first user might be admin. For this app, let's default to client 
-          // unless specific criteria met. For now, let's use 'client' as default.
-          const defaultRole = 'client';
+          // If profile missing, initialize with client (or admin if owner email)
+          const isOwnerEmail = user.email === 'sami478779@gmail.com';
+          const defaultRole = isOwnerEmail ? 'admin' : 'client';
           setDoc(userRef, {
             uid: user.uid,
             email: user.email,
-            displayName: user.displayName,
+            displayName: user.displayName || user.email?.split('@')[0],
             photoURL: user.photoURL,
             role: defaultRole,
             createdAt: serverTimestamp(),
@@ -76,8 +87,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribeRole();
   }, [user]);
 
+  const activeRole = activeRoleOverride || roleData?.role || 'client';
+
+  const setActiveRole = (role: 'client' | 'doctor' | 'admin') => {
+    // Only admins can switch to any role; doctors can switch between doctor and client
+    if (roleData?.role === 'admin' || (roleData?.role === 'doctor' && role !== 'admin')) {
+      setActiveRoleOverride(role);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, roleData, loading }}>
+    <AuthContext.Provider value={{ user, roleData, activeRole, setActiveRole, loading }}>
       {children}
     </AuthContext.Provider>
   );
