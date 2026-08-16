@@ -42,31 +42,31 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 bg-gray-50 dark:bg-gray-950 transition-colors">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16 px-4">
-          <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">Features</span>
-          <h2 className="text-4xl md:text-5xl font-sans font-bold text-gray-900 dark:text-white mt-4 mb-6 tracking-tight">
+    <section id="features" className="py-16 sm:py-20 bg-gray-50 dark:bg-gray-950 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-12 px-4">
+          <span className="text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider text-xs">Features</span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2.5 mb-3.5 tracking-tight">
             Advanced AI Health Features
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
             Our platform combines cutting-edge machine learning with verified medical knowledge 
-            to provide you with the most accurate health insights.
+            to provide you with accurate, real-time health insights.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, i) => (
             <motion.div
               key={i}
-              whileHover={{ y: -5 }}
-              className="bg-white dark:bg-gray-900 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl dark:hover:shadow-blue-900/5 transition-all"
+              whileHover={{ y: -4 }}
+              className="bg-white dark:bg-gray-900 p-6 sm:p-7 rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg dark:hover:shadow-blue-900/5 transition-all"
             >
-              <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-gray-200 dark:shadow-black/20`}>
-                <feature.icon className="text-white w-7 h-7" />
+              <div className={`w-11 h-11 sm:w-12 sm:h-12 ${feature.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-5 shadow-md shadow-gray-200 dark:shadow-black/20`}>
+                <feature.icon className="text-white w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-xs sm:text-sm">
                 {feature.description}
               </p>
             </motion.div>

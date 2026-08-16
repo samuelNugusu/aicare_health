@@ -272,7 +272,7 @@ export default function ChatAssistant() {
                   )}
                 </AnimatePresence>
                 
-                <div className="relative flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -283,25 +283,29 @@ export default function ChatAssistant() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                    className="p-2.5 sm:p-3 text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all flex-shrink-0"
+                    title="Attach image or report"
                   >
-                    <Paperclip className="w-5 h-5" />
+                    <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder={attachedImage ? "Add a message about this image..." : "Ask AiCare anything..."}
-                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 transition-all dark:text-white"
-                  />
-                  <button
-                    type="submit"
-                    disabled={(!input.trim() && !attachedImage) || isLoading}
-                    className="absolute right-2 p-2.5 bg-purple-600 dark:bg-purple-700 text-white rounded-xl hover:bg-purple-700 dark:hover:bg-purple-600 disabled:opacity-50 transition-all shadow-md"
-                  >
-                    <Send className="w-5 h-5" />
-                  </button>
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder={attachedImage ? "Add a message about this image..." : "Ask AiCare anything..."}
+                      className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl pl-3.5 sm:pl-5 pr-11 sm:pr-12 py-3 sm:py-3.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 transition-all dark:text-white"
+                    />
+                    <button
+                      type="submit"
+                      disabled={(!input.trim() && !attachedImage) || isLoading}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 bg-purple-600 dark:bg-purple-700 text-white rounded-lg sm:rounded-xl hover:bg-purple-700 dark:hover:bg-purple-600 disabled:opacity-40 transition-all shadow-md flex items-center justify-center"
+                      aria-label="Send message"
+                    >
+                      <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-[10px] text-gray-400 dark:text-gray-600 text-center mt-2 uppercase tracking-widest font-bold">Press enter to send</p>
               </form>

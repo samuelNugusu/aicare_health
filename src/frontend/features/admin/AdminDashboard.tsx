@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { 
   Users, Shield, Settings, Activity, LayoutGrid, HeartPulse, 
-  MoreHorizontal, UserPlus, Trash2, X, BarChart3, PieChartIcon, 
-  AlertCircle, ShieldCheck, ChevronRight 
+  MoreHorizontal, UserPlus, Trash2, X, BarChart3, PieChart as PieChartIcon, 
+  AlertCircle, ShieldCheck, ChevronRight, Search, TrendingUp, CheckCircle2 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
@@ -15,31 +15,40 @@ import {
 } from 'firebase/firestore';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart, Pie, Cell 
+  ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
+
+interface UserData {
+  id: string;
+  displayName: string;
+  name?: string;
+  email: string;
+  role: 'doctor' | 'client' | 'admin';
+  createdAt?: any;
+}
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [view, setView] = useState<'admin' | 'patient'>('admin');
-  const [users, setUsers] = useState<any[]>([]);
-  const [stats, setStats] = useState({ total: 0, doctors: 0, patients: 0 });
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [stats, setStats] = useState({ total: 0, doctors: 0, clients: 0 });
   const [diagnosisStats, setDiagnosisStats] = useState({ completed: 0, verified: 0, failed: 0, total: 0 });
   const [showProvisionModal, setShowProvisionModal] = useState(false);
-  const [newUser, setNewUser] = useState({ email: '', displayName: '', role: 'client' });
+  const [newUser, setNewUser] = useState({ email: '', name: '', role: 'client' as 'doctor' | 'client' });
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const q = query(collection(db, 'users'));
     const unsubscribeUsers = onSnapshot(q, (snap) => {
-      const userList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      const userList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserData));
       setUsers(userList);
       
-      const counts = userList.reduce((acc, u: any) => {
+      const counts = userList.reduce((acc, u) => {
         if (u.role === 'doctor') acc.doctors++;
-        else if (u.role === 'client') acc.patients++;
+        else if (u.role === 'client') acc.clients++;
         acc.total++;
         return acc;
-      }, { total: 0, doctors: 0, patients: 0 });
+      }, { total: 0, doctors: 0, clients: 0 });
       setStats(counts);
     }, (error) => {
       console.error("Admin Users Fetch Error:", error);
@@ -57,7 +66,7 @@ const AdminDashboard: React.FC = () => {
       }, { completed: 0, verified: 0, failed: 0, total: 0 });
       setDiagnosisStats(labCounts);
     }, (error) => {
-      console.warn("Admin Labs CollectionGroup Error (check indexes):", error);
+      console.warn("Admin Labs Snapshot Error:", error);
     });
 
     return () => {
@@ -66,7 +75,7 @@ const AdminDashboard: React.FC = () => {
     };
   }, []);
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const handleUpdateRole = async (userId: string, newRole: string) => {
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
     } catch (err) {
@@ -74,8 +83,8 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const deleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to remove this user from the registry?")) return;
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm("Are you sure you want to terminate this entity's access?")) return;
     try {
       await deleteDoc(doc(db, 'users', userId));
     } catch (err) {
@@ -85,117 +94,125 @@ const AdminDashboard: React.FC = () => {
 
   const handleProvision = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUser.email || !newUser.displayName) return;
-    const uid = `p_${Math.random().toString(36).substr(2, 9)}`;
+    if (!newUser.email || !newUser.name) return;
+    const tempUid = `id_${Date.now()}`;
     try {
-      await setDoc(doc(db, 'users', uid), {
+      await setDoc(doc(db, 'users', tempUid), {
         ...newUser,
+        displayName: newUser.name,
         createdAt: new Date().toISOString()
       });
       setShowProvisionModal(false);
-      setNewUser({ email: '', displayName: '', role: 'client' });
+      setNewUser({ email: '', name: '', role: 'client' });
     } catch (err) {
       console.error("Provisioning failed:", err);
     }
   };
 
   const filteredUsers = users.filter(u => 
-    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const chartData = [
-    { name: 'Verified', value: diagnosisStats.verified, color: '#10b981' },
-    { name: 'Pending', value: diagnosisStats.completed, color: '#3b82f6' },
-    { name: 'Failed', value: diagnosisStats.failed, color: '#ef4444' },
+    { name: 'Verified', value: diagnosisStats.verified, color: '#10B981' },
+    { name: 'Pending', value: diagnosisStats.completed, color: '#3B82F6' },
+    { name: 'Failed', value: diagnosisStats.failed, color: '#F43F5E' },
   ];
 
-  const userDistribution = [
-    { name: 'Patients', value: stats.patients, color: '#3b82f6' },
-    { name: 'Doctors', value: stats.doctors, color: '#8b5cf6' },
+  const pieData = [
+    { name: 'Patients', value: stats.clients, color: '#3B82F6' },
+    { name: 'Doctors', value: stats.doctors, color: '#10B981' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white transition-colors duration-500 relative overflow-hidden selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-600/30 overflow-x-hidden font-sans pb-16">
       {/* Background Atmos */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+      <div className="fixed inset-0 pointer-events-none opacity-40">
+        <div className="absolute top-0 left-0 w-full h-[350px] sm:h-[500px] bg-gradient-to-b from-blue-900/10 to-transparent" />
+        <div className="absolute top-1/4 -right-20 w-64 sm:w-96 h-64 sm:h-96 bg-purple-600/10 blur-[100px] sm:blur-[120px] rounded-full" />
+        <div className="absolute bottom-1/4 -left-20 w-64 sm:w-96 h-64 sm:h-96 bg-blue-600/10 blur-[100px] sm:blur-[120px] rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
-        <header className="mb-12 sm:mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 sm:w-12 h-1 bg-blue-600" />
-              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">System Command</span>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div>
+            <div className="flex items-center gap-2 text-blue-500 font-semibold tracking-wider text-xs uppercase mb-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              Core Infrastructure Management
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter italic leading-none">
-              ADMIN <span className="text-blue-600">OPS</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+              Control <span className="text-blue-500">Terminal</span>
             </h1>
-            <p className="text-sm sm:text-base text-gray-500 font-medium max-w-md leading-relaxed">
-              Global intelligence oversight and clinical governance terminal.
-            </p>
           </div>
-          
-          <div className="flex p-1 bg-white/5 backdrop-blur-2xl rounded-2xl sm:rounded-[2rem] border border-white/10 shadow-2xl">
+
+          <nav className="flex items-center self-start sm:self-auto gap-1.5 p-1 bg-white/5 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-white/10 w-full sm:w-auto">
             <button 
               onClick={() => setView('admin')}
               className={cn(
-                "flex items-center gap-2 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-[1.5rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all",
-                view === 'admin' ? "bg-blue-600 text-white shadow-xl scale-105" : "text-gray-500 hover:text-white"
+                "flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-semibold uppercase tracking-wider transition-all",
+                view === 'admin' ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "text-gray-400 hover:text-white"
               )}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-3.5 h-3.5" />
               Intelligence
             </button>
             <button 
               onClick={() => setView('patient')}
               className={cn(
-                "flex items-center gap-2 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-[1.5rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all",
-                view === 'patient' ? "bg-rose-600 text-white shadow-xl scale-105" : "text-gray-500 hover:text-white"
+                "flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-semibold uppercase tracking-wider transition-all",
+                view === 'patient' ? "bg-rose-600 text-white shadow-md shadow-rose-600/20" : "text-gray-400 hover:text-white"
               )}
             >
-              <HeartPulse className="w-4 h-4" />
-              Simulator
+              <HeartPulse className="w-3.5 h-3.5" />
+              Simulate View
             </button>
-          </div>
+          </nav>
         </header>
 
         <AnimatePresence mode="wait">
           {view === 'admin' ? (
             <motion.div
-              key="admin"
-              initial={{ opacity: 0, y: 20 }}
+              key="admin-view"
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-12 sm:space-y-16"
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6 sm:space-y-8"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-                <StatCard icon={Users} label="Total Assets" value={stats.total.toString()} trend="Active Nodes" color="blue" />
-                <StatCard icon={Shield} label="Clinical Staff" value={stats.doctors.toString()} trend="Verified" color="emerald" />
-                <StatCard icon={Activity} label="Clinical Records" value={diagnosisStats.verified.toString()} trend="Finalized" color="purple" />
-                <StatCard icon={Settings} label="Task Queue" value={diagnosisStats.completed.toString()} trend="Processing" color="blue" />
-                <StatCard icon={AlertCircle} label="System Alerts" value={diagnosisStats.failed.toString()} trend="High Priority" color="orange" />
+              {/* Real-time Stat Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <StatCard icon={<Users />} label="Nodes" value={stats.total.toString()} sub="Global Registry" color="blue" />
+                <StatCard icon={<Shield />} label="Clinical" value={stats.doctors.toString()} sub="Verified Medics" color="emerald" />
+                <StatCard icon={<Activity />} label="Diagnostics" value={diagnosisStats.total.toString()} sub="Total Events" color="purple" />
+                <StatCard icon={<TrendingUp />} label="Efficacy" value={`${Math.round((diagnosisStats.verified / (diagnosisStats.total || 1)) * 100)}%`} sub="Verified Rate" color="blue" />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
-                <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[3rem] border border-white/5 p-8 sm:p-12 shadow-2xl overflow-hidden relative group">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-white/40 mb-8 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-blue-500" />
-                    Diagnosis Performance
-                  </h3>
-                  <div className="h-64 sm:h-80 w-full">
+              {/* Visual Intelligence Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="lg:col-span-2 bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden group">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-blue-500" />
+                      Diagnostics Activity
+                    </h3>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      Live Stream
+                    </span>
+                  </div>
+                  <div className="h-48 sm:h-60 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis dataKey="name" stroke="#ffffff40" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
-                        <YAxis stroke="#ffffff40" fontSize={10} fontWeight="900" tickLine={false} axisLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', borderRadius: '1rem', fontSize: '10px' }} />
-                        <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
+                        <XAxis dataKey="name" stroke="#ffffff50" fontSize={11} axisLine={false} tickLine={false} />
+                        <YAxis stroke="#ffffff50" fontSize={11} axisLine={false} tickLine={false} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff15', borderRadius: '10px', fontSize: '11px', color: '#fff' }}
+                        />
+                        <Bar dataKey="value" radius={[5, 5, 0, 0]}>
                           {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                            <Cell key={`bar-${index}`} fill={entry.color} />
                           ))}
                         </Bar>
                       </BarChart>
@@ -203,169 +220,290 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[3rem] border border-white/5 p-8 sm:p-12 shadow-2xl overflow-hidden relative group">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-white/40 mb-8 flex items-center gap-2">
-                    <PieChartIcon className="w-4 h-4 text-purple-500" />
-                    User Distribution
+                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl">
+                  <h3 className="text-sm sm:text-base font-bold tracking-tight mb-4 flex items-center gap-2">
+                    <PieChartIcon className="w-4 h-4 text-purple-400" />
+                    Registry Breakdown
                   </h3>
-                  <div className="h-64 sm:h-80 w-full">
+                  <div className="h-44 sm:h-52 w-full relative">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={userDistribution}
-                          innerRadius={80}
-                          outerRadius={120}
-                          paddingAngle={10}
+                          data={pieData}
+                          innerRadius={48}
+                          outerRadius={70}
+                          paddingAngle={5}
                           dataKey="value"
                         >
-                          {userDistribution.map((entry, index) => (
+                          {pieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff10', borderRadius: '1rem', fontSize: '10px' }} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #ffffff15', borderRadius: '10px', fontSize: '11px' }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                      <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Total Nodes</div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 mt-3">
+                    {pieData.map((item) => (
+                      <div key={item.name} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-xs text-gray-400">{item.name}</span>
+                        </div>
+                        <span className="font-semibold">{item.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white/[0.02] backdrop-blur-3xl rounded-[2rem] sm:rounded-[4rem] border border-white/5 shadow-2xl overflow-hidden">
-                <div className="p-8 sm:p-12 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              {/* Registry Management */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tighter italic uppercase">Identity <span className="text-blue-500">Registry</span></h2>
-                    <p className="text-sm text-gray-500 mt-2">Managing healthcare entities across the decentralized spectrum.</p>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight">Entity Registry</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Control access tiers and permissions.</p>
                   </div>
-                  <div className="flex gap-4 w-full md:w-auto">
-                    <input 
-                      type="text" 
-                      placeholder="SEARCH..." 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="flex-1 md:w-64 bg-white/5 border border-white/10 rounded-2xl px-6 text-xs font-black uppercase tracking-widest focus:border-blue-500 outline-none"
-                    />
+                  
+                  <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-60">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                      <input 
+                        type="text"
+                        placeholder="Scan directory..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs font-medium focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-gray-500"
+                      />
+                    </div>
+                    
                     <button 
                       onClick={() => setShowProvisionModal(true)}
-                      className="p-4 sm:p-5 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center gap-3 font-black uppercase text-[10px] tracking-widest"
+                      className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold text-xs uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md active:scale-95 flex-shrink-0"
                     >
-                      <UserPlus className="w-5 h-5" />
-                      Provision
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Provision Node
                     </button>
                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[800px]">
+
+                {/* Desktop/Tablet Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-white/5 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
-                        <th className="px-12 py-8">Entity Identity</th>
-                        <th className="px-12 py-8">Classification</th>
-                        <th className="px-12 py-8">Status</th>
-                        <th className="px-12 py-8 text-right">Registry Manage</th>
+                      <tr className="border-b border-white/5 text-xs font-semibold uppercase tracking-wider text-gray-400 bg-white/[0.01]">
+                        <th className="px-5 py-3.5">Identity Profile</th>
+                        <th className="px-5 py-3.5">Access Classification</th>
+                        <th className="px-5 py-3.5">Internal ID</th>
+                        <th className="px-5 py-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {filteredUsers.map((u, i) => (
-                        <motion.tr 
+                        <tr 
                           key={u.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className="hover:bg-white/[0.03] transition-colors"
+                          className="hover:bg-white/[0.02] transition-colors"
                         >
-                          <td className="px-12 py-10">
-                            <div className="flex items-center gap-6">
-                              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-xl font-black italic shadow-inner">
-                                {u.displayName?.[0] || '?'}
-                              </div>
-                              <div>
-                                <div className="text-lg font-black tracking-tight">{u.displayName || 'Anonymous Node'}</div>
-                                <div className="text-[10px] font-mono text-gray-500">{u.email || u.id}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-12 py-10">
-                             <select 
-                               value={u.role || 'client'}
-                               onChange={(e) => updateUserRole(u.id, e.target.value)}
-                               className={cn(
-                                 "appearance-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest cursor-pointer outline-none transition-all",
-                                 u.role === 'admin' ? "text-blue-400 border-blue-500/30" : "text-gray-400"
-                               )}
-                             >
-                               <option value="client" className="bg-[#050505]">Patient Node</option>
-                               <option value="doctor" className="bg-[#050505]">Clinical Hub</option>
-                               <option value="admin" className="bg-[#050505]">System Overlord</option>
-                             </select>
-                          </td>
-                          <td className="px-12 py-10">
+                          <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-[10px] font-black uppercase italic text-emerald-500">Live</span>
+                              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-xs font-bold text-blue-400 flex-shrink-0">
+                                {(u.displayName || u.name)?.[0]?.toUpperCase() || '?'}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs sm:text-sm font-semibold truncate max-w-[200px]">
+                                  {u.displayName || u.name || 'External Node'}
+                                </div>
+                                <div className="text-xs font-mono text-gray-500 truncate max-w-[200px]">{u.email}</div>
+                              </div>
                             </div>
                           </td>
-                          <td className="px-12 py-10 text-right">
-                            <button 
-                              onClick={() => deleteUser(u.id)}
-                              className="p-4 hover:bg-rose-500/10 text-gray-600 hover:text-rose-500 rounded-xl transition-all"
+                          <td className="px-5 py-3.5">
+                            <select 
+                              value={u.role || 'client'}
+                              onChange={(e) => handleUpdateRole(u.id, e.target.value)}
+                              className={cn(
+                                "appearance-none bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer outline-none hover:border-blue-500/50 transition-all",
+                                u.role === 'admin' ? "text-amber-400" :
+                                u.role === 'doctor' ? "text-emerald-400" :
+                                "text-blue-400"
+                              )}
                             >
-                              <Trash2 className="w-5 h-5" />
+                              <option value="client" className="bg-[#0a0a0a]">Patient Node</option>
+                              <option value="doctor" className="bg-[#0a0a0a]">Clinical Staff</option>
+                              <option value="admin" className="bg-[#0a0a0a]">Global Admin</option>
+                            </select>
+                          </td>
+                          <td className="px-5 py-3.5 font-mono text-xs text-gray-500 truncate max-w-[120px]">{u.id}</td>
+                          <td className="px-5 py-3.5 text-right">
+                            <button 
+                              onClick={() => handleDeleteUser(u.id)}
+                              className="p-2 hover:bg-rose-500/10 text-gray-500 hover:text-rose-400 rounded-lg transition-all"
+                              title="Terminate Entry"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </td>
-                        </motion.tr>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-white/5">
+                  {filteredUsers.map((u) => (
+                    <div key={u.id} className="p-4 space-y-2.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-xs font-bold text-blue-400 flex-shrink-0">
+                            {(u.displayName || u.name)?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold truncate">
+                              {u.displayName || u.name || 'External Node'}
+                            </div>
+                            <div className="text-[10px] font-mono text-gray-500 truncate">{u.email}</div>
+                          </div>
+                        </div>
+                        
+                        <button 
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="p-1.5 text-gray-500 hover:text-rose-400 rounded-lg"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">Tier</span>
+                        <select 
+                          value={u.role || 'client'}
+                          onChange={(e) => handleUpdateRole(u.id, e.target.value)}
+                          className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs font-semibold text-blue-400 outline-none"
+                        >
+                          <option value="client" className="bg-[#0a0a0a]">Patient</option>
+                          <option value="doctor" className="bg-[#0a0a0a]">Doctor</option>
+                          <option value="admin" className="bg-[#0a0a0a]">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+
+                  {filteredUsers.length === 0 && (
+                    <div className="p-8 text-center text-xs text-gray-500">
+                      No entities found
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           ) : (
             <motion.div
-              key="patient"
+              key="patient-simulation"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className="bg-white/5 backdrop-blur-3xl rounded-[4rem] border border-white/5 p-8 shadow-2xl"
+              className="space-y-3"
             >
-               <PatientDashboard />
+              <div className="flex items-center gap-2 text-rose-500 font-semibold uppercase tracking-wider text-xs px-1">
+                <AlertCircle className="w-4 h-4" />
+                Simulating Patient Perspective
+              </div>
+              <div className="bg-[#080808] rounded-2xl border border-white/10 overflow-hidden">
+                <PatientDashboard />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
+      {/* Provision Modal */}
       <AnimatePresence>
         {showProvisionModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setShowProvisionModal(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-xl"
             />
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-[#0a0a0a] border border-white/10 rounded-[4rem] p-12 w-full max-w-xl shadow-[0_0_100px_rgba(37,99,235,0.2)]"
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 sm:p-8 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
             >
-              <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-10">Provision <span className="text-blue-600">Entity</span></h2>
-              <form onSubmit={handleProvision} className="space-y-8">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Full Identity Name</label>
-                  <input required value={newUser.displayName} onChange={(e) => setNewUser({...newUser, displayName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black uppercase tracking-widest focus:border-blue-500 outline-none" placeholder="e.g. ARIS THORNE" />
+              <button 
+                onClick={() => setShowProvisionModal(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="mb-5 sm:mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1">Provision <span className="text-blue-500">Node</span></h3>
+                <p className="text-gray-400 text-xs">Register entity to internal directory</p>
+              </div>
+
+              <form onSubmit={handleProvision} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-400 ml-1">Identity Name</label>
+                  <input 
+                    required
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                    placeholder="Full name"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 transition-colors"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Communication Bridge (Email)</label>
-                  <input required type="email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black uppercase tracking-widest focus:border-blue-500 outline-none" placeholder="USER@INTERNAL.COM" />
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-400 ml-1">Email Address</label>
+                  <input 
+                    required
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                    placeholder="user@internal.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 transition-colors"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Access Tier</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {['client', 'doctor'].map((r) => (
-                      <button key={r} type="button" onClick={() => setNewUser({...newUser, role: r})} className={cn("p-6 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all", newUser.role === r ? "bg-blue-600 text-white" : "bg-white/5 border-white/10 text-gray-500")}>
-                        {r === 'client' ? 'Patient Node' : 'Clinical Node'}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-400 ml-1">Access Hierarchy</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['client', 'doctor'] as const).map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setNewUser({...newUser, role})}
+                        className={cn(
+                          "py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all",
+                          newUser.role === role 
+                            ? "bg-blue-600 border-blue-500 text-white shadow-md" 
+                            : "bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30"
+                        )}
+                      >
+                        {role === 'doctor' ? 'Clinical Staff' : 'Patient Node'}
                       </button>
                     ))}
                   </div>
                 </div>
-                <button type="submit" className="w-full py-8 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-blue-600 hover:text-white transition-all shadow-2xl">
-                  Commit Registry Entry
-                </button>
+
+                <div className="pt-2">
+                  <button 
+                    type="submit"
+                    className="w-full py-3 bg-white text-black rounded-xl font-semibold text-xs sm:text-sm uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
+                  >
+                    Commit Node Entry
+                    <UserPlus className="w-4 h-4" />
+                  </button>
+                </div>
               </form>
             </motion.div>
           </div>
@@ -375,23 +513,24 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: any, label: string, value: string, trend: string, color: string }) => {
-  const colors: any = {
-    blue: 'text-blue-500 border-blue-500/20 bg-blue-500/10',
-    emerald: 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10',
-    purple: 'text-purple-500 border-purple-500/20 bg-purple-500/10',
-    orange: 'text-orange-500 border-orange-500/20 bg-orange-500/10',
+const StatCard = ({ icon, label, value, sub, color }: { icon: any, label: string, value: string, sub: string, color: 'blue' | 'emerald' | 'purple' }) => {
+  const colors = {
+    blue: 'text-blue-500 border-blue-500/20 bg-blue-500/5',
+    emerald: 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5',
+    purple: 'text-purple-500 border-purple-500/20 bg-purple-500/5',
   };
+
   return (
-    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 group hover:bg-white/[0.04] transition-all">
-      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-10 border transition-all group-hover:scale-110", colors[color])}>
-        <Icon className="w-5 h-5" />
+    <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 sm:p-5 group hover:bg-white/[0.05] transition-all relative overflow-hidden">
+      <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-3 sm:mb-4 border transition-all", colors[color])}>
+        {React.cloneElement(icon, { className: 'w-4 h-4 sm:w-4.5 sm:h-4.5' })}
       </div>
-      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">{label}</div>
-      <div className="text-4xl font-black italic tracking-tighter mb-4">{value}</div>
-      <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500 italic">{trend}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-0.5">{label}</div>
+      <div className="text-xl sm:text-2xl font-bold tracking-tight mb-0.5">{value}</div>
+      <div className="text-[10px] text-gray-500">{sub}</div>
     </div>
   );
 };
 
 export default AdminDashboard;
+

@@ -68,63 +68,63 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         />
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800"
         >
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-900 transition-colors"
+            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="p-10">
-            <header className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <div className="p-6 sm:p-8">
+            <header className="mb-6 text-center">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
               </h2>
-              <p className="text-gray-500 mt-2">
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-1">
                 {mode === 'login' ? 'Access your health dashboard.' : 'Start your health journey today.'}
               </p>
             </header>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm font-medium rounded-2xl border border-red-100 italic">
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium rounded-xl border border-red-100 dark:border-red-800/30">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {mode === 'register' && (
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Full Name"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-900 dark:text-white"
                   />
                 </div>
               )}
               
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="email"
                   placeholder="Email Address"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-900 dark:text-white"
                 />
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="password"
                   placeholder="Password"
@@ -132,44 +132,44 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-900 dark:text-white"
                 />
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 disabled={loading}
-                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50 mt-2"
+                className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50 mt-2 shadow-sm"
               >
                 {loading ? 'Processing...' : (mode === 'login' ? 'Sign In' : 'Join Now')}
                 {!loading && <ArrowRight className="w-4 h-4" />}
               </motion.button>
             </form>
 
-            <div className="relative my-8">
+            <div className="relative my-5">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100"></div>
+                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase font-black text-gray-400 tracking-tighter">
-                <span className="bg-white px-4">Or continue with</span>
+              <div className="relative flex justify-center text-[10px] uppercase font-semibold text-gray-400 tracking-wider">
+                <span className="bg-white dark:bg-gray-900 px-3">Or continue with</span>
               </div>
             </div>
 
             <button
               onClick={handleGoogle}
               disabled={loading}
-              className="w-full py-4 bg-white border border-gray-100 text-gray-700 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all shadow-sm"
+              className="w-full py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all shadow-sm"
             >
-              <Chrome className="w-5 h-5 text-[#4285F4]" />
+              <Chrome className="w-4 h-4 text-[#4285F4]" />
               Google Account
             </button>
 
-            <p className="mt-8 text-center text-sm text-gray-500 font-medium">
+            <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-400 font-medium">
               {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
               <button
                 onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                className="text-blue-600 font-black uppercase text-xs tracking-widest hover:underline ml-1"
+                className="text-blue-600 dark:text-blue-400 font-semibold uppercase text-xs tracking-wider hover:underline ml-1"
               >
                 {mode === 'login' ? 'Join AiCare' : 'Sign In'}
               </button>

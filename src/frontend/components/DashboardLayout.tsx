@@ -17,10 +17,8 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/30">
-      <div className="pt-16">
-        {children}
-      </div>
+    <div className="min-h-screen bg-transparent transition-colors">
+      {children}
     </div>
   );
 };
