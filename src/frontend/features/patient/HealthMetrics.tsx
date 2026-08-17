@@ -23,18 +23,18 @@ interface MetricEntry {
   timestamp: any;
 }
 
-const METRIC_CONFIG: Record<string, { label: string; icon: any; unit: string; color: string; bg: string }> = {
-  weight: { label: 'Weight', icon: Scale, unit: 'kg', color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-  blood_pressure_sys: { label: 'Sys BP', icon: Activity, unit: 'mmHg', color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
-  heart_rate: { label: 'Heart Rate', icon: Heart, unit: 'bpm', color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-900/20' },
-  glucose: { label: 'Glucose', icon: Droplet, unit: 'mg/dL', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-  height: { label: 'Height', icon: Ruler, unit: 'cm', color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-};
-
 interface HealthMetricsProps {
   userId?: string;
   readOnly?: boolean;
 }
+
+const METRIC_CONFIG: Record<string, { label: string; icon: any; unit: string; color: string; bg: string }> = {
+  weight: { label: 'Weight', icon: Scale, unit: 'kg', color: 'text-amber-400', bg: 'bg-[#0a0a0a] border-white/10' },
+  blood_pressure_sys: { label: 'Sys BP', icon: Activity, unit: 'mmHg', color: 'text-rose-400', bg: 'bg-[#0a0a0a] border-white/10' },
+  heart_rate: { label: 'Heart Rate', icon: Heart, unit: 'bpm', color: 'text-pink-400', bg: 'bg-[#0a0a0a] border-white/10' },
+  glucose: { label: 'Glucose', icon: Droplet, unit: 'mg/dL', color: 'text-emerald-400', bg: 'bg-[#0a0a0a] border-white/10' },
+  height: { label: 'Height', icon: Ruler, unit: 'cm', color: 'text-blue-400', bg: 'bg-[#0a0a0a] border-white/10' },
+};
 
 const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
   const { user } = useAuth();
@@ -106,7 +106,7 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-lg font-bold dark:text-white">Vital Stats</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white">Vital Biometric Stats</h2>
         {!readOnly && (
           <motion.button 
             whileHover={{ scale: 1.02 }}
@@ -128,25 +128,25 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
             <motion.div 
               key={type}
               layout
-              className={`group relative p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-transparent dark:border-gray-800 ${config.bg} transition-all overflow-hidden`}
+              className={`group relative p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border ${config.bg} shadow-md hover:border-white/20 transition-all overflow-hidden`}
             >
               {data && !readOnly && (
                 <button 
                   onClick={() => deleteMetric(data.id)}
-                  className="absolute top-2 right-2 p-1.5 bg-white dark:bg-gray-800 text-gray-400 hover:text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm pointer-events-auto z-10"
+                  className="absolute top-2 right-2 p-1.5 bg-neutral-800 text-gray-400 hover:text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm pointer-events-auto z-10"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
               
               <div className="flex items-center justify-between mb-2">
-                <div className={`p-1.5 rounded-lg bg-white dark:bg-gray-800 shadow-sm ${config.color}`}>
+                <div className={`p-1.5 rounded-lg bg-white/5 border border-white/5 shadow-sm ${config.color}`}>
                   <Icon className="w-4 h-4" />
                 </div>
               </div>
               <div className="space-y-0.5">
                 <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{config.label}</div>
-                <div className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                <div className="text-base sm:text-lg font-bold text-white tracking-tight">
                   {data ? `${data.value}` : '--'}
                   <span className="text-[10px] ml-1 font-semibold text-gray-400 uppercase">{config.unit}</span>
                 </div>
@@ -164,22 +164,22 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
         {bmi && (
            <motion.div 
             layout
-            className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-transparent dark:border-gray-800 bg-blue-100/50 dark:bg-blue-900/30 transition-all col-span-2 relative overflow-hidden flex flex-col justify-between"
+            className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-950/30 transition-all col-span-2 relative overflow-hidden flex flex-col justify-between shadow-lg"
           >
-             <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-600/10 blur-2xl" />
+             <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-600/15 blur-2xl" />
              <div className="flex items-center justify-between mb-2">
-                <div className="p-1.5 rounded-lg bg-white dark:bg-gray-800 shadow-sm text-blue-600">
+                <div className="p-1.5 rounded-lg bg-white/10 text-blue-400">
                   <TrendingUp className="w-4 h-4" />
                 </div>
-                <div className="px-2 py-0.5 rounded-full bg-white dark:bg-gray-800 text-[10px] text-blue-600 font-bold uppercase tracking-wider border border-blue-100 dark:border-blue-900/30">
+                <div className="px-2 py-0.5 rounded-full bg-blue-500/20 text-[10px] text-blue-300 font-bold uppercase tracking-wider border border-blue-500/30">
                   BMI
                 </div>
               </div>
               <div className="space-y-0.5">
-                <div className="text-[10px] font-medium text-blue-900/60 dark:text-blue-300/60 uppercase tracking-wider">Body Mass Index</div>
-                <div className="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100 tracking-tight">
+                <div className="text-[10px] font-medium text-blue-300 uppercase tracking-wider">Body Mass Index</div>
+                <div className="text-lg sm:text-xl font-bold text-white tracking-tight">
                   {bmi}
-                  <span className="text-xs ml-2 font-medium opacity-80 uppercase">
+                  <span className="text-xs ml-2 font-medium text-blue-300 uppercase">
                     {parseFloat(bmi) < 18.5 ? 'Underweight' : parseFloat(bmi) < 25 ? 'Healthy' : 'Overweight'}
                   </span>
                 </div>
@@ -194,52 +194,52 @@ const HealthMetrics: React.FC<HealthMetricsProps> = ({ userId, readOnly }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md shadow-xl relative overflow-hidden"
+              className="bg-[#0a0a0a] border border-white/15 rounded-2xl p-6 w-full max-w-md shadow-2xl relative overflow-hidden text-white"
             >
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600" />
               
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-bold dark:text-white tracking-tight">Manual Log</h3>
-                  <p className="text-xs text-gray-500 font-medium">Record a new health data point.</p>
+                  <h3 className="text-lg font-bold text-white tracking-tight">Manual Log</h3>
+                  <p className="text-xs text-gray-400 font-medium">Record a new health data point.</p>
                 </div>
                 <button 
                   onClick={() => setIsAdding(false)}
-                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
                 >
-                  <X className="w-5 h-5 dark:text-white" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               <form onSubmit={handleAddMetric} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-0.5">Stat Type</label>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-0.5">Stat Type</label>
                   <select 
                     value={newMetric.type}
                     onChange={(e) => setNewMetric({ ...newMetric, type: e.target.value })}
-                    className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border-none ring-1 ring-gray-200 dark:ring-gray-700 focus:ring-2 focus:ring-blue-600 transition-all font-semibold text-xs sm:text-sm dark:text-white appearance-none pr-10"
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-xs sm:text-sm text-white appearance-none pr-10"
                   >
                     {Object.entries(METRIC_CONFIG).map(([type, config]) => (
-                      <option key={type} value={type}>{config.label}</option>
+                      <option key={type} value={type} className="bg-neutral-900 text-white">{config.label}</option>
                     ))}
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-0.5">Recorded Value ({METRIC_CONFIG[newMetric.type]?.unit})</label>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-0.5">Recorded Value ({METRIC_CONFIG[newMetric.type]?.unit})</label>
                   <input 
                     type="number"
                     step="0.1"
                     placeholder="0.0"
                     value={newMetric.value}
                     onChange={(e) => setNewMetric({ ...newMetric, value: e.target.value })}
-                    className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border-none ring-1 ring-gray-200 dark:ring-gray-700 focus:ring-2 focus:ring-blue-600 transition-all text-lg font-bold dark:text-white shadow-inner"
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-bold text-white placeholder:text-gray-600 shadow-inner"
                     autoFocus
                   />
                 </div>

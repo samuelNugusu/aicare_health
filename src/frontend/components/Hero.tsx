@@ -32,18 +32,18 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-5">
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-5">
               <Zap className="w-3.5 h-3.5" />
               Advanced Health Intelligence
             </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight mb-5">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight mb-5">
               AI-Powered <br />
-              <span className="text-blue-600">Health Diagnostics</span> <br />
+              <span className="text-blue-500">Health Diagnostics</span> <br />
               at Your Fingertips
             </h1>
             
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-300 mb-8 max-w-lg leading-relaxed">
               Upload your lab results and get instant, professional-grade AI analysis. 
               Monitor your health trends and chat with your personal medical assistant 24/7.
             </p>
@@ -53,7 +53,7 @@ export default function Hero() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStart}
-                className="w-full sm:w-auto bg-blue-600 text-white px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
+                className="w-full sm:w-auto bg-blue-600 text-white px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30"
               >
                 {user ? 'Go to Dashboard' : 'Analyze Your Health Now'}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -62,14 +62,14 @@ export default function Hero() {
               <div className="flex items-center gap-3.5 py-1">
                 <div className="flex -space-x-2.5">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white dark:border-gray-950 bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                    <div key={i} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-neutral-900 bg-neutral-800 flex items-center justify-center overflow-hidden">
                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
                     </div>
                   ))}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100">10k+ Users</span>
-                  <span className="text-[10px] sm:text-xs text-gray-500">Managing health better</span>
+                  <span className="text-xs sm:text-sm font-bold text-white">10k+ Users</span>
+                  <span className="text-[10px] sm:text-xs text-gray-400">Managing health better</span>
                 </div>
               </div>
             </div>

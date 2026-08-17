@@ -139,11 +139,11 @@ const DoctorDashboard: React.FC = () => {
 
   if (selectedPatientId) {
     return (
-      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 transition-all pb-12">
+      <div className="min-h-screen bg-[#050505] text-white transition-all pb-12">
         <div className="max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-6">
            <button 
             onClick={() => setSelectedPatientId(null)}
-            className="mb-6 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:-translate-x-1 transition-transform"
+            className="mb-6 flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-widest hover:-translate-x-1 transition-transform"
            >
             ← Return to Physician Command Center
            </button>
@@ -154,43 +154,43 @@ const DoctorDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 transition-colors duration-300 pb-16">
+    <div className="min-h-screen bg-[#050505] text-white transition-colors duration-300 pb-16">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         
         {/* Physician Role Header */}
         <header className="mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Role Classification: Attending Physician / Medical Doctor
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-              Clinical <span className="text-emerald-600 dark:text-emerald-400">Operations & Diagnostic Review</span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
+              Clinical <span className="text-emerald-400">Operations & Diagnostic Review</span>
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 text-xs sm:text-sm">
-              Attending: <span className="font-semibold text-gray-700 dark:text-gray-200">{roleData?.displayName || user?.displayName || user?.email}</span>
-              {roleData?.specialty && <span className="text-emerald-600 dark:text-emerald-400 font-medium"> • {roleData.specialty}</span>}
+            <p className="text-gray-400 mt-1 text-xs sm:text-sm">
+              Attending: <span className="font-semibold text-gray-200">{roleData?.displayName || user?.displayName || user?.email}</span>
+              {roleData?.specialty && <span className="text-emerald-400 font-medium"> • {roleData.specialty}</span>}
             </p>
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative group w-full sm:w-64">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-400 transition-colors" />
               <input 
                 type="text" 
                 placeholder="Search labs & patients..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 shadow-sm transition-all dark:text-white"
+                className="w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-white/10 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 shadow-sm transition-all text-white placeholder:text-gray-500"
               />
             </div>
 
             <button
               onClick={() => setActiveRole('PATIENT')}
-              className="px-3.5 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-emerald-300 dark:hover:border-emerald-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 bg-[#0a0a0a] border border-white/10 hover:border-emerald-500/40 text-gray-200 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
               title="Preview patient health dashboard"
             >
-              <Eye className="w-3.5 h-3.5 text-blue-500" />
+              <Eye className="w-3.5 h-3.5 text-blue-400" />
               Patient Preview
             </button>
           </div>
@@ -207,14 +207,14 @@ const DoctorDashboard: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3 mb-6 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-6 overflow-x-auto">
           <button
             onClick={() => setActiveTab('queue')}
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'queue'
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/30"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             )}
           >
             <Clipboard className="w-3.5 h-3.5" />
@@ -226,8 +226,8 @@ const DoctorDashboard: React.FC = () => {
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'appointments'
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/30"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             )}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -239,8 +239,8 @@ const DoctorDashboard: React.FC = () => {
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'patients'
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/30"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             )}
           >
             <Users className="w-3.5 h-3.5" />
@@ -252,8 +252,8 @@ const DoctorDashboard: React.FC = () => {
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'analytics'
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/30"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             )}
           >
             <BarChart3 className="w-3.5 h-3.5" />
@@ -264,13 +264,13 @@ const DoctorDashboard: React.FC = () => {
         {/* TAB 1: LAB REVIEWS QUEUE */}
         {activeTab === 'queue' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a0a0a] p-4 rounded-2xl border border-white/10 shadow-lg">
               <div>
-                <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
-                  <Stethoscope className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-base text-white flex items-center gap-2">
+                  <Stethoscope className="w-4 h-4 text-emerald-400" />
                   Clinical Diagnostic Verification Queue
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 mt-0.5">
                   Review AI parsed blood biomarkers, enter physician clinical notes, and certify lab diagnoses.
                 </p>
               </div>
@@ -281,8 +281,8 @@ const DoctorDashboard: React.FC = () => {
                 <button
                   onClick={() => setStatusFilter('all')}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-semibold",
-                    statusFilter === 'all' ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/60"
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                    statusFilter === 'all' ? "bg-white/15 text-white" : "text-gray-400 hover:bg-white/5"
                   )}
                 >
                   All ({labReviews.length})
@@ -290,8 +290,8 @@ const DoctorDashboard: React.FC = () => {
                 <button
                   onClick={() => setStatusFilter('pending')}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-semibold",
-                    statusFilter === 'pending' ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/60"
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                    statusFilter === 'pending' ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "text-gray-400 hover:bg-white/5"
                   )}
                 >
                   Pending ({stats.pending})
@@ -299,8 +299,8 @@ const DoctorDashboard: React.FC = () => {
                 <button
                   onClick={() => setStatusFilter('verified')}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-semibold",
-                    statusFilter === 'verified' ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/60"
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                    statusFilter === 'verified' ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-gray-400 hover:bg-white/5"
                   )}
                 >
                   Verified ({stats.verified})
@@ -312,7 +312,6 @@ const DoctorDashboard: React.FC = () => {
               {filteredReviews.map((review, i) => {
                 const isVerified = review.status === 'verified';
                 const hasCritical = review.analysis?.keyMetrics?.some((m: any) => m.status === 'critical');
-                const hasHigh = review.analysis?.keyMetrics?.some((m: any) => m.status === 'high');
 
                 return (
                   <motion.div
@@ -320,44 +319,44 @@ const DoctorDashboard: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.02 }}
-                    className="p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-900/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-4 sm:p-5 bg-[#0a0a0a] rounded-2xl border border-white/10 shadow-md hover:shadow-xl hover:border-emerald-500/40 hover:bg-white/[0.03] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="flex items-start sm:items-center gap-3.5 min-w-0">
                       <div className={cn(
                         "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm",
                         isVerified 
-                          ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50" 
-                          : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50"
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" 
+                          : "bg-blue-500/10 text-blue-400 border border-blue-500/30"
                       )}>
                         {isVerified ? <ShieldCheck className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                       </div>
 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate">
+                          <h4 className="font-bold text-sm sm:text-base text-white truncate">
                             {review.fileName || 'Blood Panel Submission'}
                           </h4>
                           
                           <span className={cn(
                             "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1",
                             isVerified
-                              ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40"
-                              : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                              : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
                           )}>
                             {isVerified ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                             {isVerified ? 'Physician Verified' : 'Pending Review'}
                           </span>
 
                           {hasCritical && (
-                            <span className="px-2 py-0.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] font-bold uppercase tracking-wider rounded-md border border-red-200 dark:border-red-800/40 flex items-center gap-1">
+                            <span className="px-2 py-0.5 bg-rose-500/10 text-rose-400 text-[10px] font-bold uppercase tracking-wider rounded-md border border-rose-500/30 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" />
                               Critical Biomarker
                             </span>
                           )}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mt-1">
-                          <span>Patient ID: <span className="font-mono text-gray-600 dark:text-gray-400">{review.patientUserId?.slice(0, 10)}...</span></span>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mt-1">
+                          <span>Patient ID: <span className="font-mono text-gray-300">{review.patientUserId?.slice(0, 10)}...</span></span>
                           <span>•</span>
                           <span>{review.uploadDate?.toDate ? new Date(review.uploadDate.toDate()).toLocaleDateString() : 'Recent'}</span>
                           {review.analysis?.keyMetrics && (
@@ -376,8 +375,8 @@ const DoctorDashboard: React.FC = () => {
                         className={cn(
                           "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm",
                           isVerified
-                            ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-                            : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20"
+                            ? "bg-white/10 text-gray-200 hover:bg-white/20"
+                            : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/30"
                         )}
                       >
                         {isVerified ? <Eye className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
@@ -387,7 +386,7 @@ const DoctorDashboard: React.FC = () => {
                       {review.patientUserId && (
                         <button
                           onClick={() => setSelectedPatientId(review.patientUserId)}
-                          className="p-2 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-400 hover:text-blue-600 rounded-xl transition-all"
+                          className="p-2 bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 rounded-xl transition-all"
                           title="Open full patient health hub"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -399,9 +398,9 @@ const DoctorDashboard: React.FC = () => {
               })}
 
               {filteredReviews.length === 0 && (
-                <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
-                  <Clipboard className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400 font-medium text-xs">No lab reports found matching this criteria.</p>
+                <div className="text-center py-16 bg-[#0a0a0a] rounded-2xl border-2 border-dashed border-white/10">
+                  <Clipboard className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                  <p className="text-gray-400 font-medium text-xs">No lab reports found matching this criteria.</p>
                 </div>
               )}
             </div>
@@ -417,10 +416,10 @@ const DoctorDashboard: React.FC = () => {
         {activeTab === 'patients' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
-              <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white">
+              <h3 className="font-bold text-base sm:text-lg text-white">
                 Assigned Clinical Patient Registry
               </h3>
-              <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold rounded-full uppercase tracking-wider border border-emerald-100 dark:border-emerald-800/30">
+              <div className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full uppercase tracking-wider border border-emerald-500/30">
                 {filteredPatients.length} Active Patients
               </div>
             </div>
@@ -433,17 +432,17 @@ const DoctorDashboard: React.FC = () => {
                   transition={{ delay: i * 0.03 }}
                   key={p.id} 
                   onClick={() => setSelectedPatientId(p.id)}
-                  className="p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-900/40 transition-all flex items-center justify-between gap-4 group cursor-pointer"
+                  className="p-4 bg-[#0a0a0a] rounded-2xl border border-white/10 shadow-md hover:shadow-xl hover:border-emerald-500/40 hover:bg-white/[0.03] transition-all flex items-center justify-between gap-4 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative flex-shrink-0">
-                      <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner overflow-hidden border border-emerald-100 dark:border-emerald-800/40">
+                      <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 shadow-inner overflow-hidden border border-emerald-500/30">
                         {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : <Users className="w-5 h-5" />}
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 bg-emerald-500" />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-neutral-900 bg-emerald-500" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
                         {p.displayName || 'Patient Member'}
                       </h4>
                       <p className="text-[10px] sm:text-xs text-gray-400 font-mono truncate mt-0.5">{p.email}</p>
@@ -451,10 +450,10 @@ const DoctorDashboard: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center gap-2.5 flex-shrink-0">
-                    <span className="hidden sm:inline-block text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-md">
+                    <span className="hidden sm:inline-block text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                       Open Charts →
                     </span>
-                    <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                    <div className="p-2 bg-white/5 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white" />
                     </div>
                   </div>
@@ -462,7 +461,7 @@ const DoctorDashboard: React.FC = () => {
               ))}
 
               {filteredPatients.length === 0 && (
-                <div className="col-span-2 text-center py-12 bg-white dark:bg-gray-900 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                <div className="col-span-2 text-center py-12 bg-[#0a0a0a] rounded-2xl border-2 border-dashed border-white/10">
                   <p className="text-gray-400 font-medium text-xs">No matching patient profiles found.</p>
                 </div>
               )}
@@ -473,18 +472,18 @@ const DoctorDashboard: React.FC = () => {
         {/* TAB 3: CLINICAL ANALYTICS */}
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-             <div className="bg-white dark:bg-gray-900 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
-                 <BarChart3 className="w-4 h-4 text-emerald-500" />
+             <div className="bg-[#0a0a0a] p-5 sm:p-6 rounded-2xl border border-white/10 shadow-xl">
+               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+                 <BarChart3 className="w-4 h-4 text-emerald-400" />
                  Diagnostic Review Ratio
                </h3>
                <div className="h-56 sm:h-64 w-full">
                  <ResponsiveContainer width="100%" height="100%">
                    <BarChart data={chartData}>
-                     <CartesianGrid strokeDasharray="3 3" stroke="#88888815" vertical={false} />
-                     <XAxis dataKey="name" stroke="#88888880" fontSize={11} fontWeight="600" tickLine={false} axisLine={false} />
-                     <YAxis stroke="#88888880" fontSize={11} fontWeight="600" tickLine={false} axisLine={false} />
-                     <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '10px', fontSize: '11px' }} />
+                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                     <XAxis dataKey="name" stroke="#ffffff60" fontSize={11} fontWeight="600" tickLine={false} axisLine={false} />
+                     <YAxis stroke="#ffffff60" fontSize={11} fontWeight="600" tickLine={false} axisLine={false} />
+                     <Tooltip contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: '#fff', fontSize: '11px' }} />
                      <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                        {chartData.map((entry, index) => (
                          <Cell key={`cell-${index}`} fill={entry.color} />
@@ -495,9 +494,9 @@ const DoctorDashboard: React.FC = () => {
                </div>
              </div>
 
-             <div className="bg-white dark:bg-gray-900 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
-                 <PieChartIcon className="w-4 h-4 text-purple-500" />
+             <div className="bg-[#0a0a0a] p-5 sm:p-6 rounded-2xl border border-white/10 shadow-xl">
+               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+                 <PieChartIcon className="w-4 h-4 text-purple-400" />
                  Verification & Triage Breakdown
                </h3>
                <div className="h-56 sm:h-64 w-full">
@@ -514,7 +513,7 @@ const DoctorDashboard: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '10px', fontSize: '11px' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: '#fff', fontSize: '11px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                </div>
@@ -533,37 +532,37 @@ const DoctorDashboard: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedReview(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 dark:bg-gray-950 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl"
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#0a0a0a] border border-white/15 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl text-white"
             >
               <button 
                 onClick={() => setSelectedReview(null)}
-                className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="absolute top-5 right-5 p-2 text-gray-400 hover:text-white transition-colors"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
               
               <div className="mb-6">
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
                   <Stethoscope className="w-4 h-4" />
                   Physician Diagnostic Clinical Assessment
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   {selectedReview.fileName}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-gray-400">
                     Patient User ID: {selectedReview.patientUserId}
                   </div>
                   <div className={cn(
                     "px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
-                    selectedReview.status === 'verified' ? "bg-emerald-500 text-white" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
+                    selectedReview.status === 'verified' ? "bg-emerald-500 text-white" : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                   )}>
                     {selectedReview.status === 'verified' ? 'Verified' : 'Pending Certification'}
                   </div>
@@ -602,12 +601,12 @@ const DocStat = ({ icon, label, value, color }: { icon: React.ReactNode, label: 
     red: 'bg-red-600 text-white'
   };
   return (
-    <div className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm group hover:shadow-md transition-all">
+    <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0a0a0a] border border-white/10 shadow-md group hover:border-white/20 transition-all">
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2.5 shadow-sm ${colors[color] || colors.blue}`}>
         {icon}
       </div>
-      <div className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight mb-0.5">{value}</div>
-      <div className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">{label}</div>
+      <div className="text-lg sm:text-xl font-bold text-white tracking-tight mb-0.5">{value}</div>
+      <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{label}</div>
     </div>
   );
 };
