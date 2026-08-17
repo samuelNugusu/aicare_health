@@ -54,23 +54,23 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-300 font-sans not-italic">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/10 transition-colors duration-300 font-sans not-italic">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
           <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-600/20">
             <Activity className="text-white w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <span className="font-bold text-lg sm:text-xl tracking-tight text-gray-900 dark:text-white">AiCare</span>
+          <span className="font-bold text-lg sm:text-xl tracking-tight text-white">AiCare</span>
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-6 lg:gap-8 text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-300">
-          <a href="/" onClick={(e) => scrollToSection(e, 'top')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Home</a>
-          <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Features</a>
-          <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">AI Assistant</a>
+        <div className="hidden md:flex items-center gap-6 lg:gap-8 text-xs lg:text-sm font-semibold text-gray-300">
+          <a href="/" onClick={(e) => scrollToSection(e, 'top')} className="hover:text-blue-400 transition-colors">Home</a>
+          <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="hover:text-blue-400 transition-colors">Features</a>
+          <a href="#assistant" onClick={(e) => scrollToSection(e, 'assistant')} className="hover:text-blue-400 transition-colors">AI Assistant</a>
           {user && (
-            <Link to="/dashboard" className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold hover:opacity-80 transition-opacity">
+            <Link to="/dashboard" className="flex items-center gap-1.5 text-blue-400 font-bold hover:opacity-80 transition-opacity">
               <LayoutDashboard className="w-4 h-4" />
               Dashboard
             </Link>
@@ -81,7 +81,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={toggleTheme}
-            className="p-2 sm:p-2.5 rounded-xl bg-gray-100/80 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+            className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition-all"
             aria-label="Toggle Theme"
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -92,7 +92,7 @@ export default function Navbar() {
               {/* User details (visible on sm+) */}
               <div className="hidden sm:flex flex-col items-end leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-gray-900 dark:text-gray-100 max-w-[110px] md:max-w-[140px] truncate">
+                  <span className="text-xs font-bold text-gray-100 max-w-[110px] md:max-w-[140px] truncate">
                     {user.displayName || user.email?.split('@')[0]}
                   </span>
                   <span className={`text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider ${getRoleBadgeStyle(activeRole)}`}>
@@ -101,14 +101,14 @@ export default function Navbar() {
                 </div>
                 <button 
                   onClick={handleSignOut}
-                  className="text-[10px] text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-bold uppercase tracking-wider mt-0.5 transition-colors"
+                  className="text-[10px] text-gray-400 hover:text-red-400 font-bold uppercase tracking-wider mt-0.5 transition-colors"
                 >
                   Sign Out
                 </button>
               </div>
 
               {/* User Avatar */}
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-center bg-emerald-600 text-white font-bold text-xs sm:text-sm">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-white/10 flex-shrink-0 flex items-center justify-center bg-emerald-600 text-white font-bold text-xs sm:text-sm">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -132,7 +132,7 @@ export default function Navbar() {
 
           {/* Mobile Menu Toggle Button */}
           <button 
-            className="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            className="md:hidden p-2 text-gray-300 hover:bg-white/5 border border-white/10 rounded-xl transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle Navigation Menu"
           >
@@ -148,43 +148,43 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 overflow-hidden shadow-lg"
+            className="md:hidden bg-[#0a0a0a] border-b border-white/10 overflow-hidden shadow-2xl"
           >
             <div className="px-4 py-6 space-y-4 flex flex-col items-stretch text-center">
               <a 
                 href="/" 
                 onClick={(e) => scrollToSection(e, 'top')} 
-                className="py-2 text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                className="py-2 text-base font-bold text-white hover:text-blue-400"
               >
                 Home
               </a>
               <a 
                 href="#features" 
                 onClick={(e) => scrollToSection(e, 'features')} 
-                className="py-2 text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                className="py-2 text-base font-bold text-white hover:text-blue-400"
               >
                 Features
               </a>
               <a 
                 href="#assistant" 
                 onClick={(e) => scrollToSection(e, 'assistant')} 
-                className="py-2 text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                className="py-2 text-base font-bold text-white hover:text-blue-400"
               >
                 AI Assistant
               </a>
               
               {user ? (
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                <div className="pt-4 border-t border-white/10 space-y-4">
                   <Link 
                     to="/dashboard" 
                     onClick={() => setIsMobileMenuOpen(false)} 
-                    className="w-full py-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold rounded-xl flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold rounded-xl flex items-center justify-center gap-2"
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     Open Dashboard
                   </Link>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-left">
+                  <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl text-left">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center flex-shrink-0">
                         {user.photoURL ? (
@@ -194,14 +194,14 @@ export default function Navbar() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{user.displayName || user.email}</p>
+                        <p className="text-xs font-bold text-white truncate">{user.displayName || user.email}</p>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${getRoleBadgeStyle(activeRole)}`}>{activeRole}</span>
                       </div>
                     </div>
                     
                     <button 
                       onClick={handleSignOut}
-                      className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors flex-shrink-0"
+                      className="px-3 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold rounded-lg hover:bg-red-500/30 transition-colors flex-shrink-0"
                     >
                       Sign Out
                     </button>

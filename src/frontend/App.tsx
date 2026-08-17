@@ -71,7 +71,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-300">
+    <div className="min-h-screen bg-[#050505] text-gray-100 selection:bg-blue-600/30 transition-colors duration-300">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-blue-600 origin-left z-[60]"
         style={{ scaleX }}
@@ -86,11 +86,11 @@ export default function App() {
               <Hero />
               <Features />
               
-              <div id="how-it-works" className="py-14 sm:py-20 bg-white dark:bg-gray-950/50 border-y border-gray-50 dark:border-gray-900 transition-colors">
+              <div id="how-it-works" className="py-14 sm:py-20 bg-[#050505] border-y border-white/5 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                    <div className="text-center mb-10 sm:mb-14">
-                      <span className="text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider text-xs">Workflow</span>
-                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2 mb-3 tracking-tight">How AiCare Works</h2>
+                      <span className="text-blue-400 font-semibold uppercase tracking-wider text-xs">Workflow</span>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-white mt-2 mb-3 tracking-tight">How AiCare Works</h2>
                    </div>
                    
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -100,10 +100,10 @@ export default function App() {
                        { step: "03", title: "Get Recommendations", desc: "Receive personalized health advice based on your biology." },
                        { step: "04", title: "Chat with AI", desc: "Ask follow-up questions to your personal assistant." }
                      ].map((item, i) => (
-                       <div key={i} className="relative p-5 sm:p-6 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 group hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
-                          <span className="text-2xl sm:text-3xl font-bold text-blue-200 dark:text-blue-900/60 absolute top-4 right-5 group-hover:text-blue-500/20 transition-colors">{item.step}</span>
-                          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2 relative z-10">{item.title}</h3>
-                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed relative z-10">{item.desc}</p>
+                       <div key={i} className="relative p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/10 group hover:border-blue-500/30 hover:bg-white/[0.05] hover:shadow-lg transition-all">
+                          <span className="text-2xl sm:text-3xl font-bold text-blue-500/20 absolute top-4 right-5 group-hover:text-blue-400/40 transition-colors">{item.step}</span>
+                          <h3 className="text-base sm:text-lg font-bold text-white mb-2 relative z-10">{item.title}</h3>
+                          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed relative z-10">{item.desc}</p>
                        </div>
                      ))}
                    </div>
