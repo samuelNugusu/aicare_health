@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { analyzeLabResult, getHealthAssistantResponse } from "./aiService.js";
+import { analyzeLabResult, getHealthAssistantResponse, diagnoseGeminiConnection } from "./aiService.js";
 
 // Load environment variables
 dotenv.config();
@@ -12,16 +12,39 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// API Health Check
+// API Health & Diagnostics Check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "AiCare API is running" });
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY || process.env.API_KEY);
+  const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
+  res.json({ 
+    status: "ok", 
+    message: "AiCare API is running",
+    geminiConfigured: hasGemini,
+    openaiConfigured: hasOpenAI
+  });
+});
+
+// Gemini Connection Diagnostics Endpoint
+app.post("/api/ai/diagnose", async (req, res) => {
+  try {
+    const key = (req.headers['x-gemini-key'] as string) || req.body?.key || req.body?.apiKey;
+    const report = await diagnoseGeminiConnection(key);
+    res.json(report);
+  } catch (error: any) {
+    console.error("Diagnostic Run Error:", error);
+    res.status(500).json({ 
+      error: error?.message || "Failed to execute diagnostics",
+      details: error
+    });
+  }
 });
 
 // AI Analysis Route
 app.post("/api/ai/analyze", async (req, res) => {
   try {
     const { input, provider } = req.body;
-    const result = await analyzeLabResult(input, provider);
+    const key = (req.headers['x-gemini-key'] as string) || req.body?.key || req.body?.apiKey;
+    const result = await analyzeLabResult(input, provider, key);
     res.json(result);
   } catch (error: any) {
     console.error("AI Analysis Error:", error);
@@ -33,7 +56,8 @@ app.post("/api/ai/analyze", async (req, res) => {
 app.post("/api/ai/chat", async (req, res) => {
   try {
     const { history, message, base64Image, provider } = req.body;
-    const result = await getHealthAssistantResponse(history, message, base64Image, provider);
+    const key = (req.headers['x-gemini-key'] as string) || req.body?.key || req.body?.apiKey;
+    const result = await getHealthAssistantResponse(history, message, base64Image, provider, key);
     res.json({ result });
   } catch (error: any) {
     console.error("AI Chat Error:", error);

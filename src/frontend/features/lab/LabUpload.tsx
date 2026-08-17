@@ -336,9 +336,12 @@ export default function LabUpload() {
                       </div>
 
                       {error && (
-                        <div className="flex items-center gap-2 text-rose-600 text-xs font-semibold p-3.5 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/30">
-                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                          <span>{error}</span>
+                        <div className="flex items-start gap-2.5 text-rose-300 text-xs font-medium p-4 bg-rose-500/10 rounded-2xl border border-rose-500/30">
+                          <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <span className="font-bold text-rose-200">Analysis Notice:</span>
+                            <p className="leading-relaxed">{error}</p>
+                          </div>
                         </div>
                       )}
 
