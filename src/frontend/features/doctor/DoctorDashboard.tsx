@@ -10,12 +10,13 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import PatientDashboard from '../patient/PatientDashboard';
 import AnalysisResults from '../lab/AnalysisResults';
+import AppointmentsManager from '../appointments/AppointmentsManager';
 import { cn } from '../../utils/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const DoctorDashboard: React.FC = () => {
   const { user, roleData, setActiveRole } = useAuth();
-  const [activeTab, setActiveTab] = useState<'queue' | 'patients' | 'analytics'>('queue');
+  const [activeTab, setActiveTab] = useState<'queue' | 'appointments' | 'patients' | 'analytics'>('queue');
   const [patients, setPatients] = useState<any[]>([]);
   const [labReviews, setLabReviews] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -185,7 +186,7 @@ const DoctorDashboard: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setActiveRole('client')}
+              onClick={() => setActiveRole('PATIENT')}
               className="px-3.5 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-emerald-300 dark:hover:border-emerald-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
               title="Preview patient health dashboard"
             >
@@ -206,11 +207,11 @@ const DoctorDashboard: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3 mb-6">
+        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3 mb-6 overflow-x-auto">
           <button
             onClick={() => setActiveTab('queue')}
             className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all",
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'queue'
                 ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
                 : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
@@ -221,9 +222,22 @@ const DoctorDashboard: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('appointments')}
+            className={cn(
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
+              activeTab === 'appointments'
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+            )}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            Appointments & Consultations
+          </button>
+
+          <button
             onClick={() => setActiveTab('patients')}
             className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all",
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'patients'
                 ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
                 : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
@@ -236,7 +250,7 @@ const DoctorDashboard: React.FC = () => {
           <button
             onClick={() => setActiveTab('analytics')}
             className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all",
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap",
               activeTab === 'analytics'
                 ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
                 : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
@@ -394,7 +408,12 @@ const DoctorDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 2: PATIENTS DIRECTORY */}
+        {/* TAB 2: APPOINTMENTS & CONSULTATIONS */}
+        {activeTab === 'appointments' && (
+          <AppointmentsManager mode="doctor" />
+        )}
+
+        {/* TAB 3: PATIENTS DIRECTORY */}
         {activeTab === 'patients' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">

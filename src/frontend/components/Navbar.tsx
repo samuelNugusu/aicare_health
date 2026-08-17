@@ -9,11 +9,22 @@ import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 
 export default function Navbar() {
-  const { user, roleData } = useAuth();
+  const { user, activeRole, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const getRoleBadgeStyle = (role: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50';
+      case 'DOCTOR':
+        return 'bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50';
+      default:
+        return 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50';
+    }
+  };
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -84,11 +95,9 @@ export default function Navbar() {
                   <span className="text-xs font-bold text-gray-900 dark:text-gray-100 max-w-[110px] md:max-w-[140px] truncate">
                     {user.displayName || user.email?.split('@')[0]}
                   </span>
-                  {roleData && (
-                    <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-md font-black uppercase tracking-wider">
-                      {roleData.role}
-                    </span>
-                  )}
+                  <span className={`text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider ${getRoleBadgeStyle(activeRole)}`}>
+                    {activeRole}
+                  </span>
                 </div>
                 <button 
                   onClick={handleSignOut}
@@ -186,7 +195,7 @@ export default function Navbar() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{user.displayName || user.email}</p>
-                        <span className="text-[9px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">{roleData?.role || 'Patient'}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${getRoleBadgeStyle(activeRole)}`}>{activeRole}</span>
                       </div>
                     </div>
                     

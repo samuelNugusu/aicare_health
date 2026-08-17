@@ -42,7 +42,7 @@ app.post("/api/ai/chat", async (req, res) => {
 });
 
 async function startServer() {
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -61,15 +61,12 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 }
 
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  startServer().catch((err) => {
-    console.error("Failed to start server:", err);
-    process.exit(1);
-  });
-}
+startServer().catch((err) => {
+  console.error("Failed to start server:", err);
+});
 
 export default app;

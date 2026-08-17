@@ -25,48 +25,29 @@ import { useAuth } from './firebase/AuthProvider';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Activity, ArrowRight } from 'lucide-react';
 
-const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, roleData, loading } = useAuth();
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!user) return <Navigate to="/" />;
-  if (roleData && !allowedRoles.includes(roleData.role)) return <Navigate to="/" />;
 
   return <>{children}</>;
 };
 
 const DashboardRouter = () => {
-  const { user, roleData, loading } = useAuth();
+  const { user, activeRole, loading } = useAuth();
   
   if (loading) return null; // Handled by DashboardLayout wrapper
 
   if (!user) return <Navigate to="/" />;
 
-  if (!roleData) {
-    return (
-      <div className="max-w-md mx-auto mt-20 p-10 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl text-center transition-colors">
-        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Activity className="w-8 h-8" />
-        </div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Syncing Health Profile</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed font-serif italic">We're calibrating your personalized dashboard. If this takes more than a few seconds, please click initialize below.</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/20"
-        >
-          Initialize Profile
-        </button>
-      </div>
-    );
-  }
-
-  if (roleData.role === 'admin') return <AdminDashboard />;
-  if (roleData.role === 'doctor') return <DoctorDashboard />;
+  if (activeRole === 'ADMIN') return <AdminDashboard />;
+  if (activeRole === 'DOCTOR') return <DoctorDashboard />;
   return <PatientDashboard />;
 };
 
@@ -163,7 +144,7 @@ export default function App() {
           } />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute allowedRoles={['admin', 'doctor', 'client']}>
+            <ProtectedRoute>
               <DashboardLayout>
                 <DashboardRouter />
               </DashboardLayout>

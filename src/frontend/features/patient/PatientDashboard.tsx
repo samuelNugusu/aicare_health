@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/AuthProvider';
 import { collection, query, orderBy, onSnapshot, where, limit, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck, BarChart3, Database, Sparkles } from 'lucide-react';
+import { Activity, Clock, FileText, ChevronRight, Zap, UserCheck, X, ShieldCheck, BarChart3, Database, Sparkles, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../utils/utils';
 import LabUpload from '../lab/LabUpload';
 import HealthMetrics from './HealthMetrics';
 import AnalysisResults from '../lab/AnalysisResults';
+import AppointmentsManager from '../appointments/AppointmentsManager';
 import { seedRealClinicalData } from '../../services/seedClinicalData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -21,6 +22,7 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
   const isViewingSelf = !patientId || patientId === user?.uid;
   const isDoctor = roleData?.role === 'doctor';
   
+  const [activeTab, setActiveTab] = useState<'labs' | 'appointments'>('labs');
   const [results, setResults] = useState<any[]>([]);
   const [diagnosisStats, setDiagnosisStats] = useState({ completed: 0, verified: 0, failed: 0 });
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -167,7 +169,40 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-1">
+      {/* Patient Tab Switcher */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
+        <button
+          onClick={() => setActiveTab('labs')}
+          className={cn(
+            "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all",
+            activeTab === 'labs'
+              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+          )}
+        >
+          <Activity className="w-3.5 h-3.5" />
+          Health Analytics & Lab Reports
+        </button>
+
+        <button
+          onClick={() => setActiveTab('appointments')}
+          className={cn(
+            "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all",
+            activeTab === 'appointments'
+              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900"
+          )}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          Doctor Consultations
+        </button>
+      </div>
+
+      {activeTab === 'appointments' ? (
+        <AppointmentsManager mode="patient" patientId={effectiveUserId} />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-1">
         <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
           <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Clinical Verified</div>
           <div className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{diagnosisStats.verified} Records</div>
@@ -338,6 +373,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patientId }) => {
            </div>
         </div>
       </div>
+      </>
+      )}
 
       <AnimatePresence>
         {selectedResult && (

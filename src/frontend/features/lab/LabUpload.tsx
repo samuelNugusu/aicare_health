@@ -192,7 +192,7 @@ export default function LabUpload() {
                  )}
                >
                  <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                 Gemini 2.5
+                 Gemini 3.7
                </button>
                <button
                  type="button"

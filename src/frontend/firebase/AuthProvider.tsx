@@ -3,35 +3,36 @@ import { auth, db } from './firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './errorHandlers';
-
-interface UserRoleData {
-  role?: 'client' | 'doctor' | 'admin';
-  isVerified?: boolean;
-  specialty?: string;
-  displayName?: string;
-  email?: string;
-}
+import { normalizeRole, ADMIN_EMAILS, UserProfile } from '../../shared/types';
 
 interface AuthContextType {
   user: FirebaseUser | null;
-  roleData: UserRoleData | null;
-  activeRole: 'client' | 'doctor' | 'admin';
-  setActiveRole: (role: 'client' | 'doctor' | 'admin') => void;
+  roleData: UserProfile | null;
+  role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  activeRole: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  isAdmin: boolean;
+  isDoctor: boolean;
+  isPatient: boolean;
+  setActiveRole: (role: 'ADMIN' | 'DOCTOR' | 'PATIENT') => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null, 
   roleData: null, 
-  activeRole: 'client', 
+  role: 'PATIENT',
+  activeRole: 'PATIENT', 
+  isAdmin: false,
+  isDoctor: false,
+  isPatient: true,
   setActiveRole: () => {}, 
   loading: true 
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [roleData, setRoleData] = useState<UserRoleData | null>(null);
-  const [activeRoleOverride, setActiveRoleOverride] = useState<'client' | 'doctor' | 'admin' | null>(null);
+  const [roleData, setRoleData] = useState<UserProfile | null>(null);
+  const [activeRoleOverride, setActiveRoleOverride] = useState<'ADMIN' | 'DOCTOR' | 'PATIENT' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,24 +55,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribeRole = onSnapshot(
       userRef, 
       (docSnap) => {
+        const isWhitelistedAdmin = user.email && ADMIN_EMAILS.some(
+          e => e.toLowerCase() === user.email?.toLowerCase().trim()
+        );
+
         if (docSnap.exists()) {
-          const data = docSnap.data() as UserRoleData;
-          setRoleData(data);
+          const data = docSnap.data() as UserProfile;
+          // If whitelisted admin has not yet been set to ADMIN in Firestore, upgrade it
+          if (isWhitelistedAdmin && normalizeRole(data.role) !== 'ADMIN') {
+            setDoc(userRef, { role: 'ADMIN' }, { merge: true }).catch(console.error);
+          }
+          setRoleData({
+            ...data,
+            role: isWhitelistedAdmin ? 'ADMIN' : (data.role || 'PATIENT')
+          });
           setLoading(false);
         } else {
-          // If profile missing, initialize with client (or admin if owner email)
-          const isOwnerEmail = user.email === 'sami478779@gmail.com';
-          const defaultRole = isOwnerEmail ? 'admin' : 'client';
+          // New User auto-registration: PATIENT by default, unless in ADMIN_EMAILS whitelist
+          const assignedRole: 'ADMIN' | 'PATIENT' = isWhitelistedAdmin ? 'ADMIN' : 'PATIENT';
           setDoc(userRef, {
             uid: user.uid,
+            id: user.uid,
             email: user.email,
-            displayName: user.displayName || user.email?.split('@')[0],
-            photoURL: user.photoURL,
-            role: defaultRole,
+            displayName: user.displayName || user.email?.split('@')[0] || 'Patient User',
+            photoURL: user.photoURL || null,
+            role: assignedRole,
             createdAt: serverTimestamp(),
+            created_at: serverTimestamp(),
             lastLogin: serverTimestamp(),
             isVerified: true
-          }, { merge: true }).catch(err => {
+          }, { merge: true }).then(() => {
+            setRoleData({
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || user.email?.split('@')[0] || 'Patient User',
+              role: assignedRole,
+              isVerified: true
+            });
+            setLoading(false);
+          }).catch(err => {
              console.error("Auto-init failed:", err);
              setLoading(false);
           });
@@ -87,20 +109,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribeRole();
   }, [user]);
 
-  const activeRole = activeRoleOverride || roleData?.role || 'client';
+  const actualRole = normalizeRole(roleData?.role, user?.email || undefined);
+  const activeRole = activeRoleOverride || actualRole;
+  const isAdmin = actualRole === 'ADMIN';
+  const isDoctor = actualRole === 'DOCTOR';
+  const isPatient = actualRole === 'PATIENT';
 
-  const setActiveRole = (role: 'client' | 'doctor' | 'admin') => {
-    // Only admins can switch to any role; doctors can switch between doctor and client
-    if (roleData?.role === 'admin' || (roleData?.role === 'doctor' && role !== 'admin')) {
+  const setActiveRole = (role: 'ADMIN' | 'DOCTOR' | 'PATIENT') => {
+    // Only admins can test perspective switching
+    if (isAdmin) {
       setActiveRoleOverride(role);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, roleData, activeRole, setActiveRole, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      roleData, 
+      role: actualRole, 
+      activeRole, 
+      isAdmin, 
+      isDoctor, 
+      isPatient, 
+      setActiveRole, 
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+

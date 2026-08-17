@@ -22,7 +22,14 @@ function getGemini() {
   if (!geminiClient) {
     const key = getGeminiKey();
     if (!key) throw new Error("GEMINI_API_KEY is missing on server.");
-    geminiClient = new GoogleGenAI({ apiKey: key });
+    geminiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
   return geminiClient;
 }
@@ -50,10 +57,57 @@ Output format MUST be strictly valid JSON:
 DISCLAIMER: Always append a professional medical disclaimer stating that this is an AI-powered data synthesis and must be reviewed by a licensed physician.
 `;
 
+// Candidate models in preference order for resilience against transient demand (503/429)
+const GEMINI_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-3.1-pro-preview",
+  "gemini-flash-latest"
+];
+
+async function generateWithGeminiFallback(options: {
+  contents: any;
+  config?: any;
+}) {
+  const ai = getGemini();
+  let lastError: any = null;
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: options.contents,
+        config: options.config
+      });
+      return response;
+    } catch (err: any) {
+      lastError = err;
+      const errMsg = err?.message || JSON.stringify(err);
+      console.warn(`Gemini model ${model} failed with: ${errMsg}. Attempting fallback model...`);
+      // If error is 503 (high demand), 429 (rate limit) or 404, continue to next model
+      if (
+        errMsg.includes("503") ||
+        errMsg.includes("429") ||
+        errMsg.includes("404") ||
+        errMsg.includes("high demand") ||
+        errMsg.includes("UNAVAILABLE") ||
+        errMsg.includes("NOT_FOUND")
+      ) {
+        continue;
+      }
+      // If it's a critical fatal error like invalid API key, throw early
+      if (errMsg.includes("API key not valid") || errMsg.includes("PERMISSION_DENIED")) {
+        throw err;
+      }
+    }
+  }
+
+  throw lastError || new Error("All Gemini models are temporarily unavailable. Please try again in a few moments.");
+}
+
 export async function analyzeLabResult(input: { text?: string; base64Image?: string }, provider: AIProvider = 'gemini') {
   if (provider === 'gemini') {
     try {
-      const ai = getGemini();
       const parts: any[] = [{ text: ANALYSIS_PROMPT }];
       if (input.text) parts.push({ text: `Lab Result Text: ${input.text}` });
       if (input.base64Image) {
@@ -63,8 +117,7 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
         parts.push({ inlineData: { data: base64Data, mimeType } });
       }
       
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+      const response = await generateWithGeminiFallback({
         contents: { parts },
         config: { 
           responseMimeType: "application/json",
@@ -77,7 +130,12 @@ export async function analyzeLabResult(input: { text?: string; base64Image?: str
       return JSON.parse(cleanJson);
     } catch (err: any) {
       console.error("Gemini Analysis Error:", err);
-      throw new Error(`Gemini Analysis Failed: ${err.message || 'Unknown error'}`);
+      let userMsg = err.message || 'Unknown error';
+      try {
+        const parsed = JSON.parse(userMsg);
+        if (parsed?.error?.message) userMsg = parsed.error.message;
+      } catch {}
+      throw new Error(`Gemini Analysis: ${userMsg}`);
     }
   } else {
     try {
@@ -124,7 +182,6 @@ export async function getHealthAssistantResponse(
 
   if (provider === 'gemini') {
     try {
-      const ai = getGemini();
       const chatHistory = history.map(h => ({
         role: (h.role === 'assistant' ? 'model' : h.role) as "user" | "model",
         parts: [{ text: h.content }]
@@ -138,8 +195,7 @@ export async function getHealthAssistantResponse(
         parts.push({ inlineData: { data: base64Data, mimeType } });
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+      const response = await generateWithGeminiFallback({
         contents: [
           ...chatHistory,
           { role: 'user', parts }
@@ -152,7 +208,12 @@ export async function getHealthAssistantResponse(
       return response.text;
     } catch (err: any) {
       console.error("Gemini Assistant Error:", err);
-      throw new Error(`Gemini Assistant Failed: ${err.message || 'Unknown error'}`);
+      let userMsg = err.message || 'Unknown error';
+      try {
+        const parsed = JSON.parse(userMsg);
+        if (parsed?.error?.message) userMsg = parsed.error.message;
+      } catch {}
+      throw new Error(`Gemini Assistant: ${userMsg}`);
     }
   } else {
     try {
